@@ -1,0 +1,23 @@
+{
+  "name": "content-generator-backend",
+  "version": "0.1.0",
+  "private": true,
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "dependencies": {
+    "axios": "1.6.3",
+    "cors": "2.8.5",
+    "dotenv": "*",
+    "express": "5.2.0",
+    "helmet": "8.1.0",
+    "https-proxy-agent": "^5.0.1",
+    "morgan": "1.10.1",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "nodemon": "3.1.11"
+  }
+}

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>نسخه آزمایشی تولید مقاله — محتوای سایت</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+
+<body>
+    <main class="container">
+        <header>
+            <h1>اتوماسیون تولید مقاله (نسخه ساده)</h1>
+            <p class="muted">ابتدا پارامترها را وارد کنید، سپس بخش‌ها را ویرایش و تولید نهایی را تایید کنید.</p>
+        </header>
+
+        <section class="card" id="inputCard">
+            <h2>ورودی اولیه</h2>
+            <form id="mainForm">
+                <label>موضوع
+                    <input id="topic" required placeholder="مثال: آموزش فعال ماضی درس عربی پایه هفتم">
+                    <small class="hint">عنوان دقیق و کوتاه؛ موضوع اصلی مقاله را بنویسید.</small>
+                </label>
+
+                <label>لحن
+                    <input id="tone" placeholder="آموزشی، ساده و رسمی">
+                    <small class="hint">مثلاً: آموزشی، رسمی، محاوره‌ای — مناسب مخاطبتان را وارد کنید.</small>
+                </label>
+
+                <label>کلمات کلیدی (جداشده با ویرگول)
+                    <input id="keywords" placeholder="مثال: عربی, جمع, تمرین">
+                    <small class="hint">کلمات کلیدی اصلی را با کاما جدا وارد کنید (word1, word2, ...).</small>
+                </label>
+
+                <div class="row">
+                    <label>طول موردنظر (کلمه)
+                        <input id="desired_length" type="number" min="100" value="600">
+                        <small class="hint">حدود تعداد کلمهٔ نهایی مورد انتظار را وارد کنید.</small>
+                    </label>
+                    <label>مخاطب هدف
+                        <input id="target_audience" placeholder="دانش‌آموزان پایه هفتم">
+                        <small class="hint">برای چه گروهی می‌نویسید؟ مثال: دانش‌آموزان پایه هفتم</small>
+                    </label>
+                </div>
+
+                <label>SERP titles (هر خط یک عنوان)
+                    <textarea id="serp" placeholder="قواعد جمع...\nتمرین جمع و مفرد..."></textarea>
+                    <small class="hint">عنوان‌هایی که در نتایج موتور جستجو می‌توانند الهام‌بخش باشند.</small>
+                </label>
+
+                <div class="row">
+                    <label>نام سایت
+                        <input id="site_name" placeholder="سایت آموزشی">
+                        <small class="hint">نام سایت یا منبع منتشرکننده.</small>
+                    </label>
+                    <label>مطالب سایت (هر خط یک مورد)
+                        <textarea id="site_posts"
+                            placeholder="آموزش درس پنجم فارسی هفتم\nآموزش عربی پایه هشتم"></textarea>
+                        <small class="hint">عنوان‌های مرتبط یا پست‌های قبلی سایت را وارد کنید تا در صورت امکان پیشنهاد
+                            لینک‌سازی داخلی و هماهنگی سبک انجام شود.</small>
+                    </label>
+                </div>
+
+                <div class="actions">
+                    <button type="submit" id="generateSections">تولید بخش‌ها</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="card" id="sectionsCard" hidden>
+            <h2>بخش‌های پیشنهادی</h2>
+            <p class="muted">بخش‌ها را ویرایش کنید، سپس هر بخش را تایید و محتوا را تولید کنید.</p>
+            <ul id="sectionsList" class="sections-list"></ul>
+        </section>
+
+        <section class="card" id="finalCard" hidden>
+            <h2>مقاله نهایی</h2>
+            <div id="finalArticle"></div>
+            <div class="actions">
+                <button id="downloadBtn">دانلود به عنوان فایل متن</button>
+                <button id="restartBtn" class="secondary">شروع مجدد</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="assets/app.js"></script>
+</body>
+
+</html>

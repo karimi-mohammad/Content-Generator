@@ -1,0 +1,171 @@
+// Simple UI logic for the article generator (mocked backend) — client folder
+const form = document.getElementById('mainForm');
+const sectionsCard = document.getElementById('sectionsCard');
+const sectionsList = document.getElementById('sectionsList');
+const finalCard = document.getElementById('finalCard');
+const finalArticle = document.getElementById('finalArticle');
+
+let state = { sections: [], keywords: [] };
+const API_BASE = 'http://localhost:4000/api';
+
+function createMockSections(topic) {
+    return [
+        { title: 'مقدمه', content: '', status: 'pending' },
+        { title: 'تعاریف و نکات کلیدی', content: '', status: 'pending' },
+        { title: 'مثال‌ها و تمرین‌ها', content: '', status: 'pending' },
+        { title: 'نتیجه‌گیری', content: '', status: 'pending' }
+    ].map((s, i) => ({ ...s, id: i + 1 }));
+}
+
+function renderSections() {
+    sectionsList.innerHTML = '';
+    state.sections.forEach(sec => {
+        const li = document.createElement('li'); li.className = 'section-item';
+        li.innerHTML = `
+      <div class="section-head">
+        <input class="sec-title" data-id="${sec.id}" value="${escapeHtml(sec.title)}">
+        <div class="section-controls">
+          <button data-action="generate" data-id="${sec.id}">تولید محتوا</button>
+          <button data-action="seo" data-id="${sec.id}" class="secondary">بررسی SEO</button>
+        </div>
+      </div>
+      <div class="section-body">
+        <textarea data-id="${sec.id}" class="sec-body">${escapeHtml(sec.content)}</textarea>
+      </div>
+    `;
+        sectionsList.appendChild(li);
+    });
+}
+
+form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const topic = document.getElementById('topic').value.trim();
+    if (!topic) return alert('لطفاً موضوع را وارد کنید.');
+    // parse keywords (comma-separated)
+    const kwInput = document.getElementById('keywords')?.value || '';
+    state.keywords = kwInput.split(',').map(s => s.trim()).filter(Boolean);
+    const payload = {
+        Topic: document.getElementById('topic').value,
+        tone: document.getElementById('tone').value,
+        desired_length: Number(document.getElementById('desired_length').value) || 600,
+        target_audience: document.getElementById('target_audience').value,
+        SEO_KeyWords: state.keywords,
+        SERP_titles: document.getElementById('serp').value ? document.getElementById('serp').value.split('\n') : [],
+        SITE_NAME_SUBJECT: document.getElementById('site_name').value,
+        Site_Posts: document.getElementById('site_posts').value ? document.getElementById('site_posts').value.split('\n') : []
+    };
+    try {
+        const resp = await fetch(`${API_BASE}/generate-sections`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+        const data = await resp.json();
+        if (data.parsed && data.parsed.sections) {
+            state.sections = data.parsed.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
+        } else if (data.parsed && data.parsed.title) {
+            // When only title provided, attempt to create default outline from parsed
+            if (Array.isArray(data.parsed.sections)) {
+                state.sections = data.parsed.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
+            } else {
+                state.sections = createMockSections(topic);
+            }
+        } else {
+            state.sections = createMockSections(topic);
+        }
+    } catch (err) {
+        console.warn('Backend /generate-sections failed, using mock:', String(err));
+        state.sections = createMockSections(topic);
+    }
+    sectionsCard.hidden = false;
+    finalCard.hidden = true;
+    renderSections();
+});
+
+sectionsList.addEventListener('click', async e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    const action = btn.dataset.action; const id = Number(btn.dataset.id);
+    const sec = state.sections.find(s => s.id === id);
+    if (action === 'generate') {
+        btn.disabled = true; btn.textContent = 'در حال تولید...';
+        try {
+            const payload = { topic: document.getElementById('topic').value, sectionTitle: sec.title, tone: document.getElementById('tone').value, desired_length: Number(document.getElementById('desired_length').value) || 400 };
+            const resp = await fetch(`${API_BASE}/generate-content`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!resp.ok) throw new Error('server-error');
+            const json = await resp.json();
+            sec.content = json.content || json.output || mockGenerateContent(document.getElementById('topic').value, sec.title);
+        } catch (err) {
+            console.warn('generate-content failed — using mock', String(err));
+            sec.content = mockGenerateContent(document.getElementById('topic').value, sec.title);
+        }
+        sec.status = 'generated';
+        renderSections();
+        btn.disabled = false; btn.textContent = 'تولید محتوا';
+        checkIfAllGenerated();
+    } else if (action === 'seo') {
+        const textarea = document.querySelector(`textarea[data-id="${id}"]`);
+        const report = runSeoChecks(textarea.value, document.getElementById('topic').value, state.keywords);
+        alert(report);
+    }
+});
+
+sectionsList.addEventListener('input', e => {
+    const t = e.target; const id = Number(t.dataset.id);
+    if (!id) return;
+    const sec = state.sections.find(s => s.id === id);
+    if (t.classList.contains('sec-title')) sec.title = t.value;
+    if (t.classList.contains('sec-body')) sec.content = t.value;
+});
+
+function checkIfAllGenerated() {
+    if (state.sections.every(s => s.status === 'generated')) {
+        compileFinalArticle();
+    }
+}
+
+function compileFinalArticle() {
+    const kwLine = state.keywords && state.keywords.length ? `کلمات کلیدی: ${state.keywords.join(', ')}\n\n` : '';
+    const header = `موضوع: ${document.getElementById('topic').value}\n` + kwLine;
+    const body = state.sections.map(s => `## ${s.title}\n\n${s.content}\n`).join('\n');
+    finalArticle.textContent = header + body;
+    finalCard.hidden = false;
+    finalCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+    const text = finalArticle.textContent || '';
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'article.txt';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+});
+
+document.getElementById('restartBtn').addEventListener('click', () => location.reload());
+
+function mockGenerateContent(topic, title) {
+    return `${title} — در این بخش به موضوع «${topic}» پرداخته می‌شود. مثال‌ها، توضیحات و نکات آموزشی به صورت ساده و قابل‌فهم آورده شده است.`;
+}
+
+function runSeoChecks(text, topic, keywords = []) {
+    if (!text.trim()) return 'محتوایی برای بررسی وجود ندارد.';
+    const words = text.split(/\s+/).filter(Boolean);
+    const kwPrimary = topic.split(/\s+/)[0] || topic;
+    const occurrencesPrimary = (text.match(new RegExp(escapeRegExp(kwPrimary), 'gi')) || []).length;
+    const densityPrimary = ((occurrencesPrimary / Math.max(1, words.length)) * 100).toFixed(2);
+    const lines = [];
+    lines.push(`کلمات: ${words.length}`);
+    lines.push(`تکرار واژه (موضوع) «${kwPrimary}»: ${occurrencesPrimary} — تراکم: ${densityPrimary}%`);
+    if (keywords && keywords.length) {
+        keywords.forEach(k => {
+            const occ = (text.match(new RegExp(escapeRegExp(k), 'gi')) || []).length;
+            const den = ((occ / Math.max(1, words.length)) * 100).toFixed(2);
+            lines.push(`واژه کلیدی «${k}»: ${occ} — تراکم: ${den}%`);
+        });
+    }
+    return lines.join('\n');
+}
+
+function escapeHtml(s) {
+    return (s || '').replace(/[&<>"']/g, m => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": "&#39;"
+    })[m]);
+}
+function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') }

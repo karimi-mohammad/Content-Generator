@@ -1,0 +1,19 @@
+{
+    "Topic": "test topic",
+    "tone": "test tone",
+    "desired_length": 100,
+    "target_audience": "test audience",
+    "SEO_KeyWords": [
+        "test",
+        "key"
+    ],
+    "SERP_titles": [
+        "title1",
+        "title2"
+    ],
+    "SITE_NAME_SUBJECT": "test site",
+    "Site_Posts": [
+        "post1",
+        "post2"
+    ]
+}
