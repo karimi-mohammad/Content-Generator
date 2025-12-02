@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>بهینه‌سازی متن برای SEO</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <style>
+        .result-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .result-item h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .result-item p,
+        .result-item textarea {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>بهینه‌سازی متن برای SEO</h1>
+            <p class="muted">متن خود را وارد کنید، کلمات کلیدی را مشخص کنید و متن بهینه‌شده برای SEO دریافت کنید.</p>
+        </header>
+
+        <section class="card">
+            <label for="inputText">متن ورودی</label>
+            <textarea id="inputText" placeholder="متن خود را اینجا وارد کنید..."></textarea>
+
+            <label for="keywords">کلمات کلیدی (جداشده با کاما)</label>
+            <input id="keywords" placeholder="کلمه1, کلمه2, کلمه3">
+
+            <div class="actions">
+                <button id="optimize">بهینه‌سازی متن</button>
+            </div>
+        </section>
+
+        <section class="card" id="resultCard" hidden>
+            <h2>متن بهینه‌شده</h2>
+            <div id="optimizedResult"></div>
+        </section>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('optimize').addEventListener('click', async () => {
+                const inputText = document.getElementById('inputText').value.trim();
+                const keywords = document.getElementById('keywords').value.trim();
+                if (!inputText || !keywords) {
+                    alert('لطفاً متن و کلمات کلیدی را وارد کنید.');
+                    return;
+                }
+
+                document.getElementById('optimize').disabled = true;
+                document.getElementById('optimize').textContent = 'در حال پردازش...';
+
+                try {
+                    const response = await fetch('/api/optimize-seo', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ input_text: inputText, keywords: keywords.split(',').map(k => k.trim()) })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        document.getElementById('optimizedResult').textContent = data.optimized_text;
+                        document.getElementById('resultCard').hidden = false;
+                    } else {
+                        alert('خطا: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('خطای شبکه: ' + error.message);
+                } finally {
+                    document.getElementById('optimize').disabled = false;
+                    document.getElementById('optimize').textContent = 'بهینه‌سازی متن';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>
