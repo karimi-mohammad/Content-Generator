@@ -300,4 +300,66 @@ ${markdown_content}`;
     }
 });
 
+// New endpoint: Optimize content for SEO and readability (Persian rules)
+router.post('/optimize-seo', async (req, res) => {
+    const { input_text, keywords } = req.body;
+
+    if (!input_text || !keywords) {
+        return res.status(400).json({ error: 'Missing required fields: input_text or keywords' });
+    }
+
+    const systemPrompt = `تو یک متخصص سئو، نویسنده وب و بهینه‌ساز حرفه‌ای محتوا هستی. وظیفه تو این است که متن ارائه‌شده توسط کاربر را بدون تغییر در موضوع، ساختار اصلی و پیام کلی آن، از نظر سئو و خوانایی بهینه‌سازی کنی.
+
+قوانین:
+1. ساختار کلی متن، تیترها و ترتیب مطالب حفظ شود.
+2. متن را روان‌تر، خواناتر و جذاب‌تر کن.
+3. از کلمات کلیدی داده‌شده در جای مناسب استفاده کن و چگالی آن‌ها را طبیعی نگه دار.
+4. از پرکردن متن غیرضروری و Keyword Stuffing خودداری کن.
+5. در صورت نیاز، جمله‌ها را فقط برای بهتر شدن سئو و روانی بازنویسی کن.
+6. پاراگراف‌ها را منظم، استاندارد و مناسب وب بنویس.
+7. لحن متن را مطابق لحن اصلی حفظ کن.
+8. هیچ توضیح اضافه‌ای بیرون از متن نهایی ارائه نده؛ فقط نسخه بهینه‌شده متن را خروجی بده.`;
+
+    const userPrompt = `متن:
+
+${input_text}
+
+کلمات کلیدی:
+
+${Array.isArray(keywords) ? keywords.join(', ') : keywords}
+
+لطفاً نسخه بهینه‌شده متن را طبق قوانین فوق و فقط خود متن (بدون توضیحات اضافه) خروجی بده.`;
+
+    const text = systemPrompt + "\n\n" + userPrompt;
+
+    const payload = {
+        contents: [
+            {
+                role: "user",
+                parts: [{ text: text }]
+            }
+        ]
+    };
+
+    try {
+        if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
+
+        const generatedText = response.data.candidates[0].content.parts[0].text;
+        // Return trimmed text directly
+        res.status(200).json({ status: response.status, optimized_text: generatedText.trim() });
+    } catch (err) {
+        console.error('Request failed:', err.message);
+        if (err.response) {
+            res.status(err.response.status).json({
+                error: 'Request failed',
+                status: err.response.status,
+                data: err.response.data
+            });
+        } else {
+            res.status(500).json({ error: 'Internal server error', message: err.message });
+        }
+    }
+});
+
 module.exports = router;

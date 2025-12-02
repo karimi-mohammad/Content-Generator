@@ -158,6 +158,23 @@ curl -X POST http://localhost:4000/api/generate-outline \
   }'
 ```
 
+**Optimize for SEO (New)**:
+
+```bash
+curl -X POST http://localhost:4000/api/optimize-seo \
+   -H "Content-Type: application/json" \
+   -d '{
+      "input_text": "متن اصلی خود را اینجا قرار دهید.\nبا پاراگراف‌ها و تیترها مشخص شود.",
+      "keywords": ["کلمه کلیدی اول", "کلمه کلیدی دوم"]
+   }'
+```
+
+Response:
+
+```json
+{ "status": 200, "optimized_text": "<optimized Persian text>" }
+```
+
 ## Contribution Guide
 
 We welcome contributions to improve this project!
@@ -169,7 +186,7 @@ We welcome contributions to improve this project!
 
 **Authors**
 
-- **Mohammad Karimi** — Initial development. 
+- **Mohammad Karimi** — Initial development.
 
 **Badges**
 
