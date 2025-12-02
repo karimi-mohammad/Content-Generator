@@ -138,7 +138,7 @@ ${Site_Posts.join(', ')}
 });
 
 router.post('/generate-content', async (req, res) => {
-    const { subject, part, length, SEO_KeyWords, SITE_NAME_SUBJECT, notes, tone, target_audience } = req.body;
+    const { subject, part, length, SEO_KeyWords, SITE_NAME_SUBJECT, notes, tone, target_audience, sectionIndex, previousContent } = req.body;
 
     if (!subject || !part || !length || !SEO_KeyWords || !SITE_NAME_SUBJECT) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -150,6 +150,8 @@ router.post('/generate-content', async (req, res) => {
 
 بخش: ${part}
 
+این بخش شماره ${sectionIndex} از مقاله است.
+
 حداکثر طول: ${length}
 
 کلمات کلیدی: ${SEO_KeyWords.join(', ')}
@@ -158,7 +160,13 @@ router.post('/generate-content', async (req, res) => {
 
 مخاطب: ${target_audience || 'دانش‌آموزان'}
 
+${previousContent ? `محتوای بخش‌های قبلی:\n${previousContent}\n\n` : ''}
+
 نکات لازم:
+
+- مطلب chunk شده هست و در حال حاضر در حال تولید یک بخش از مقاله هستیم که بخش  ${sectionIndex} ام از مطلب هست 
+
+- بخش های مطلب پشت سر هم هستند
 
 - مطلبی برای این بخش با مشخصات داده شده باید تولید شود
 
