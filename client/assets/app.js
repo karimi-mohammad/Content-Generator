@@ -160,6 +160,17 @@ function compileFinalArticle() {
         });
 }
 
+document.getElementById('copyBtn').addEventListener('click', async () => {
+    const html = finalArticle.innerHTML || '';
+    try {
+        await navigator.clipboard.writeText(html);
+        alert('HTML کپی شد!');
+    } catch (err) {
+        console.error('Failed to copy:', err);
+        alert('کپی ناموفق بود.');
+    }
+});
+
 document.getElementById('downloadBtn').addEventListener('click', () => {
     const html = finalArticle.innerHTML || finalArticle.textContent || '';
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
