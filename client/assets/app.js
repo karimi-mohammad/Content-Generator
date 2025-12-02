@@ -224,6 +224,48 @@ document.getElementById('retryConvertBtn').addEventListener('click', async () =>
     document.getElementById('loading').style.display = 'none';
 });
 
+document.getElementById('generateAllSections').addEventListener('click', async () => {
+    const btn = document.getElementById('generateAllSections');
+    btn.disabled = true;
+    btn.textContent = 'در حال تولید همه بخش‌ها...';
+    document.getElementById('loading').style.display = 'flex';
+    for (let i = 0; i < state.sections.length; i++) {
+        const sec = state.sections[i];
+        if (sec.status === 'generated') continue; // اگر قبلاً تولید شده، رد کن
+        try {
+            const sectionIndex = i + 1;
+            const previousSection = state.sections[i - 1];
+            const previousContent = previousSection ? previousSection.content : '';
+            const payload = {
+                subject: document.getElementById('topic').value,
+                part: sec.title,
+                length: sec.words || Number(document.getElementById('desired_length').value) || 400,
+                SEO_KeyWords: state.keywords,
+                SITE_NAME_SUBJECT: document.getElementById('site_name').value,
+                notes: sec.notes || '',
+                tone: document.getElementById('tone').value,
+                target_audience: document.getElementById('target_audience').value,
+                sectionIndex: sectionIndex,
+                previousContent: previousContent
+            };
+            const resp = await fetch(`${API_BASE}/generate-content`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!resp.ok) throw new Error('server-error');
+            const json = await resp.json();
+            sec.content = json.content || json.output || mockGenerateContent(document.getElementById('topic').value, sec.title);
+            sec.status = 'generated';
+        } catch (err) {
+            console.warn('generate-content failed for section', i + 1, String(err));
+            sec.content = mockGenerateContent(document.getElementById('topic').value, sec.title);
+            sec.status = 'generated';
+        }
+    }
+    renderSections();
+    document.getElementById('loading').style.display = 'none';
+    btn.disabled = false;
+    btn.textContent = 'تولید همه بخش‌ها';
+    checkIfAllGenerated();
+});
+
 function mockGenerateContent(topic, title) {
     return `${title} — در این بخش به موضوع «${topic}» پرداخته می‌شود. مثال‌ها، توضیحات و نکات آموزشی به صورت ساده و قابل‌فهم آورده شده است.`;
 }
