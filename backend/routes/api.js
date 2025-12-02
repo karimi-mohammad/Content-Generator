@@ -5,8 +5,20 @@ const { HttpsProxyAgent } = pkg;
 
 const router = express.Router();
 
-const proxyUrl = 'http://127.0.0.1:12334';
-const proxyAgent = new HttpsProxyAgent(proxyUrl);
+// Read API key from environment. Prefer GEMINI_API_KEY, fallback to GOOGLE_API_KEY.
+const API_KEY = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+if (!API_KEY) {
+    console.warn('Warning: No GEMINI_API_KEY or GOOGLE_API_KEY found in environment. The endpoints that call Gemini will fail until you set it.');
+}
+
+const proxyUrl = process.env.HTTP_PROXY || process.env.HTTPS_PROXY || '';
+const proxyAgent = proxyUrl ? new HttpsProxyAgent(proxyUrl) : null;
+
+function makeAxiosOptions(headers = {}, timeout = 30000) {
+    const opts = { headers, timeout };
+    if (proxyAgent) opts.httpsAgent = proxyAgent;
+    return opts;
+}
 
 const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
@@ -22,14 +34,8 @@ router.get('/test-gemini', async (req, res) => {
     };
 
     try {
-        const response = await axios.post(url, payload, {
-            headers: {
-                'X-goog-api-key': 'AIzaSyBIDAitGoaRXSi02fd2glT2bxIpmfvxk7A',
-                'Content-Type': 'application/json'
-            },
-            httpsAgent: proxyAgent,
-            timeout: 20000
-        });
+        if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 20000));
 
         res.status(200).json({
             status: response.status,
@@ -99,14 +105,8 @@ ${Site_Posts.join(', ')}
     };
 
     try {
-        const response = await axios.post(url, payload, {
-            headers: {
-                'X-goog-api-key': 'AIzaSyBIDAitGoaRXSi02fd2glT2bxIpmfvxk7A',
-                'Content-Type': 'application/json'
-            },
-            httpsAgent: proxyAgent,
-            timeout: 30000
-        });
+        if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text.replace(/^```json\n/, '').replace(/\n```$/, '');
         let result;
@@ -190,14 +190,8 @@ ${notes ? `- نکات اضافی: ${notes.replace(/`/g, "'")}` : ''}
     };
 
     try {
-        const response = await axios.post(url, payload, {
-            headers: {
-                'X-goog-api-key': 'AIzaSyBIDAitGoaRXSi02fd2glT2bxIpmfvxk7A',
-                'Content-Type': 'application/json'
-            },
-            httpsAgent: proxyAgent,
-            timeout: 30000
-        });
+        if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text;
         // Assuming the output is directly the markdown text
@@ -280,14 +274,8 @@ ${markdown_content}`;
     };
 
     try {
-        const response = await axios.post(url, payload, {
-            headers: {
-                'X-goog-api-key': 'AIzaSyBIDAitGoaRXSi02fd2glT2bxIpmfvxk7A',
-                'Content-Type': 'application/json'
-            },
-            httpsAgent: proxyAgent,
-            timeout: 30000
-        });
+        if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text;
         // Assuming the output is directly the HTML
