@@ -133,7 +133,7 @@ function checkIfAllGenerated() {
 function compileFinalArticle() {
     const kwLine = state.keywords && state.keywords.length ? `کلمات کلیدی: ${state.keywords.join(', ')}\n\n` : '';
     const header = `موضوع: ${document.getElementById('topic').value}\n` + kwLine;
-    const body = state.sections.map(s => `## ${s.title}\n\n${s.content}\n`).join('\n');
+    const body = state.sections.map(s => `${s.content}\n`).join('\n');
     const markdown = header + body;
 
     // Convert to HTML
