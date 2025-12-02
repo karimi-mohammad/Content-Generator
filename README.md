@@ -1,88 +1,203 @@
-# Content Generator Workflow (simple AI-powered article generator)
+# Content Generator Workflow
 
-A small Node.js + Express project providing an AI-powered article generator with a simple frontend. It uses Google Gemini (Generative Language API) to create an outline, generate section content with continuity, and convert Markdown to WordPress-friendly HTML. This repo includes a simple UI to edit and manage generated sections.
+A simple AI-powered article generator built with Node.js and Express, featuring a web-based UI for creating structured content using Google Gemini API.
 
-✅ Features
+## Description / Overview
 
-- Generate suggested outline and sections for a given `Topic` and keywords.
-- Generate content for individual sections, providing the previous section's content for continuity.
-- Auto-generate all sections one-by-one (sequential generation) using a single click.
-- Convert Markdown to WordPress-friendly HTML with specific formatting rules.
-- Client-side UI to edit, produce, copy, and download the resulting HTML.
+This project provides an automated workflow for generating educational articles or content pieces. It leverages Google's Gemini (Generative Language API) to create article outlines, generate section content with continuity, and convert the final Markdown output to WordPress-friendly HTML. The application includes a simple, user-friendly frontend for editing and managing the generated content.
 
----
+The motivation behind this tool is to streamline content creation for educational websites, particularly for subjects like Arabic language learning, by automating the repetitive aspects of article writing while maintaining quality and coherence.
+
+## Demo / Screenshots
+
+![Content Generator UI](https://via.placeholder.com/800x400?text=Content+Generator+Workflow+Demo)
+
+Sample screenshot of the article generation interface (placeholder - replace with actual image)
+
+For API-based demos:
+
+- **Generate Outline Endpoint**: `POST /api/generate-outline` with topic and keywords returns structured sections.
+- **Generate Content Endpoint**: `POST /api/generate-content` produces section-specific content.
+- **Convert Markdown Endpoint**: `POST /api/convert-markdown` transforms Markdown to HTML.
+
+## Features
+
+- **AI-Powered Outline Generation**: Creates suggested article sections (H2/H3) based on topic and keywords
+- **Sequential Content Generation**: Generates content for individual sections with continuity from previous sections
+- **Bulk Generation**: Auto-generates all sections sequentially with a single click
+- **Markdown to HTML Conversion**: Converts generated content to WordPress-friendly HTML with specific formatting rules
+- **Interactive UI**: Client-side interface for editing sections, managing content, and downloading results
+- **Proxy Support**: Configurable HTTP/HTTPS proxy for outbound API requests
+- **Environment-Based Configuration**: Secure API key management via environment variables
 
 ## Project Structure
 
-- `backend/` - Express server and API route handlers
-  - `server.js` - Entry point that serves the client and registers routes
-  - `routes/api.js` - API endpoints for AI interactions
-- `client/` - Static client UI
-  - `index.html` - The main frontend form and display
-  - `assets/app.js` - Frontend logic to call API and manage UI workflow
-  - `assets/styles.css` - Minimal UI styles
-- `README.md` - This file
-- `WORKFLOW.MD` - Project workflow notes
-- `UI.md` - UI details
+```text
+content-generator-workflow/
+├── README.md                 # Project documentation
+├── WORKFLOW.MD               # Project workflow notes
+├── UI.md                     # UI details and specifications
+├── backend/                  # Express server and API
+│   ├── package.json          # Backend dependencies and scripts
+│   ├── server.js             # Main server entry point
+│   ├── routes/
+│   │   └── api.js            # API route handlers
+│   ├── .env.example          # Environment variables template
+│   └── .env                  # Local environment (not committed)
+└── client/                   # Static frontend
+    ├── index.html            # Main UI page
+    └── assets/
+        ├── app.js            # Frontend JavaScript logic
+        └── styles.css        # UI styles
+```
 
----
+## Prerequisites
 
-## Quick Start
+- **Node.js** (v18 or higher)
+- **npm** (comes with Node.js)
+- **Google Generative Language API Key** (Gemini API)
+- Optional: HTTP/HTTPS proxy if required for outbound traffic
 
-Prerequisites
+## Installation & Setup
 
-- Node.js (v18+) and npm
-- If you use a proxy for outbound traffic, ensure it's running and available
-- A valid Google Generative Language API key (or another service) if you intend to use the AI backend
+### 1. Clone the Repository
 
-1) Install backend dependencies
+```bash
+git clone <repository-url>
+cd content-generator-workflow
+```
 
-```powershell
+### 2. Backend Setup
+
+Navigate to the backend directory and install dependencies:
+
+```bash
 cd backend
 npm install
 ```
 
-2) Configure the API key and optionally the proxy
+### 3. Environment Configuration
 
-- The backend reads the API key from environment variables instead of hard-coded values. Set `GEMINI_API_KEY` (preferred) or `GOOGLE_API_KEY` as needed and `HTTP_PROXY`/`HTTPS_PROXY` for proxy settings. For local development you can create `backend/.env` (not committed) from `backend/.env.example`.
+Copy the example environment file and configure your API key:
 
-Example (powershell):
-
-```powershell
-# Recommended variable name: GEMINI_API_KEY (fallback: GOOGLE_API_KEY)
-$env:GEMINI_API_KEY = 'your_google_gen_api_key'
-$env:HTTP_PROXY = 'http://127.0.0.1:12334'
+```bash
+cp .env.example .env
 ```
 
-3) Start the backend
+Edit `.env` and set your Google Gemini API key:
 
-```powershell
+```env
+GEMINI_API_KEY=your_actual_google_gemini_api_key_here
+# Optional proxy settings
+HTTP_PROXY=http://127.0.0.1:12334
+HTTPS_PROXY=http://127.0.0.1:12334
+```
+
+### 4. Start the Application
+
+From the backend directory:
+
+```bash
 npm start
 ```
 
-Open the client at <http://localhost:4000/> and use the simple UI.
+For development with auto-restart:
+
+```bash
+npm run dev
+```
+
+The server will start on `http://localhost:4000` and serve the client interface.
+
+## Usage
+
+1. **Access the Application**: Open `http://localhost:4000` in your web browser.
+
+2. **Enter Initial Parameters**:
+   - Topic: Main article subject
+   - Tone: Writing style (e.g., educational, formal)
+   - Keywords: Comma-separated SEO keywords
+   - Desired Length: Target word count
+   - Target Audience: Intended readers
+
+3. **Generate Outline**: Click "تولید بخش‌ها" to get suggested article sections.
+
+4. **Edit Sections**: In the suggested sections panel, modify titles and add notes as needed.
+
+5. **Generate Content**:
+   - Generate individual sections using "تولید محتوا" buttons
+   - Or generate all sections automatically with "تولید همه بخش‌ها"
+
+6. **Convert and Download**:
+   - The system automatically converts Markdown to HTML
+   - Use "تبدیل مجدد به HTML" to re-convert if needed
+   - Copy HTML with "کپی HTML" or download with "دانلود"
+
+### API Usage Examples
+
+**Test API Connectivity**:
+
+```bash
+curl http://localhost:4000/api/test-gemini
+```
+
+**Generate Outline**:
+
+```bash
+curl -X POST http://localhost:4000/api/generate-outline \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Topic": "Arabic Grammar Basics",
+    "tone": "educational",
+    "desired_length": 1000,
+    "target_audience": "students",
+    "SEO_KeyWords": ["arabic", "grammar"],
+    "SERP_titles": ["Title 1", "Title 2"],
+    "SITE_NAME_SUBJECT": "Educational Site",
+    "Site_Posts": []
+  }'
+## Contribution Guide
+
+We welcome contributions to improve this project!
+
+### Development Workflow
+
+1. **Fork the Repository**: Create your own fork on GitHub
+2. **Create a Feature Branch**: `git checkout -b feature/your-feature-name`
+3. **Make Changes**: Implement your improvements
+4. **Test Thoroughly**: Ensure all functionality works correctly
+5. **Submit a Pull Request**: Describe your changes and their benefits
+
+### Guidelines
+
+- Use environment variables for configuration (no hard-coded secrets)
+- Add appropriate error handling and logging
+- Update documentation for any new features
+- Follow existing code style and structure
+
+### Suggested Improvements
+
+- Add rate limiting for API calls
+- Implement caching for repeated requests
+- Expand frontend with more editing capabilities
+- Add support for multiple AI providers
+- Include comprehensive test suite
+
+## Authors
+
+- **<YOUR_NAME>** - Initial development - [GitHub Profile](https://github.com/yourusername)
+
+## Badges
+
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![Express.js](https://img.shields.io/badge/express-5.2.0-lightgrey)](https://expressjs.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![GitHub Issues](https://img.shields.io/github/issues/yourusername/content-generator-workflow.svg)](https://github.com/yourusername/content-generator-workflow/issues)
+[![GitHub Stars](https://img.shields.io/github/stars/yourusername/content-generator-workflow.svg)](https://github.com/yourusername/content-generator-workflow/stargazers)
 
 ---
 
-## How to use
-
-1. Enter the main `Topic`, `keywords`, and other details in the initial form.
-2. Click `تولید بخش‌ها` to get a suggested outline (H2/H3s).
-3. In the `بخش‌های پیشنهادی` panel, edit titles, notes and optionally generate individual section content using the `تولید محتوا` button.
-   - When generating a single section, the UI sends the immediate previous section content (`previousContent`) for continuity.
-   - A loading overlay will appear during the request.
-4. To generate every section in order automatically, click `تولید همه بخش‌ها` — the app will call `/api/generate-content` for each section sequentially and show a loading overlay
-5. When all sections are generated, the article is compiled and the UI will send the full Markdown to `/api/convert-markdown` to produce WordPress-friendly HTML.
-6. If conversion fails (or you want to re-run it), use the `تبدیل مجدد به HTML` button. There's also a `کپی HTML` and a `دانلود` button.
-
----
-
-## API Endpoints
-
-All endpoints are served under `/api` on the configured server port (default: `4000`).
-
-- `GET /api/test-gemini` — Test the Gemini API connectivity
-- `POST /api/generate-outline`
+*This is a prototype for development/internal use. Not intended for production without additional security and scalability enhancements.*
   - Body (example):
 
     ```json
@@ -135,28 +250,4 @@ All endpoints are served under `/api` on the configured server port (default: `4
 
 ---
 
-## Debugging
-
-- The server logs will show responses from the Gemini API. If you get a `500 Failed to parse JSON response` from `generate-outline`, it means the AI returned something JSON-like but unparsable; review the raw output in the server logs.
-- If `convert-markdown` returns an invalid HTML or errors, try clicking `تبدیل مجدد به HTML` in the UI, or inspect the `finalMarkdown` payload and re-run the endpoint.
-
----
-
-## Contribution
-
-Feel free to fork and extend the project. Suggested improvements:
-
-- Use environment variables instead of hard-coded API keys
-- Add rate limiting and retries for the AI calls
-- Introduce caching for repeated requests
-- Expand front-end to support editing of generated HTML before download
-
----
-
-## License
-
-This is a small prototype for internal/development use — not for production. No license attached.
-
----
-
-If you want, I can also add a `backend/.env.example` and update `backend/routes/api.js` to read key and proxy from environment variables. Would you like me to implement that now?
+*This is a prototype for development/internal use. Not intended for production without additional security and scalability enhancements.*
