@@ -8,6 +8,9 @@ const finalArticle = document.getElementById('finalArticle');
 let state = { sections: [], keywords: [] };
 const API_BASE = 'http://localhost:4000/api';
 
+// Ensure loading is hidden on load
+document.getElementById('loading').style.display = 'none';
+
 function createMockSections(topic) {
     return [
         { title: 'مقدمه', content: '', status: 'pending', notes: '', words: 100 },
@@ -42,6 +45,7 @@ form.addEventListener('submit', async e => {
     e.preventDefault();
     const topic = document.getElementById('topic').value.trim();
     if (!topic) return alert('لطفاً موضوع را وارد کنید.');
+    document.getElementById('loading').style.display = 'flex';
     // parse keywords (comma-separated)
     const kwInput = document.getElementById('keywords')?.value || '';
     state.keywords = kwInput.split(',').map(s => s.trim()).filter(Boolean);
@@ -71,13 +75,18 @@ form.addEventListener('submit', async e => {
         } else {
             state.sections = createMockSections(topic);
         }
+        document.getElementById('loading').style.display = 'none';
+        sectionsCard.hidden = false;
+        finalCard.hidden = true;
+        renderSections();
     } catch (err) {
         console.warn('Backend /generate-outline failed, using mock:', String(err));
         state.sections = createMockSections(topic);
+        document.getElementById('loading').style.display = 'none';
+        sectionsCard.hidden = false;
+        finalCard.hidden = true;
+        renderSections();
     }
-    sectionsCard.hidden = false;
-    finalCard.hidden = true;
-    renderSections();
 });
 
 sectionsList.addEventListener('click', async e => {
@@ -138,6 +147,7 @@ function checkIfAllGenerated() {
 }
 
 function compileFinalArticle() {
+    document.getElementById('loading').style.display = 'flex';
     const kwLine = state.keywords && state.keywords.length ? `کلمات کلیدی: ${state.keywords.join(', ')}\n\n` : '';
     const header = `موضوع: ${document.getElementById('topic').value}\n` + kwLine;
     const body = state.sections.map(s => `${s.content}\n`).join('\n');
@@ -156,18 +166,18 @@ function compileFinalArticle() {
             } else {
                 finalArticle.textContent = markdown; // fallback
             }
+            document.getElementById('loading').style.display = 'none';
             finalCard.hidden = false;
             finalCard.scrollIntoView({ behavior: 'smooth' });
         })
         .catch(err => {
             console.warn('Convert to HTML failed, using markdown:', err);
             finalArticle.textContent = markdown;
+            document.getElementById('loading').style.display = 'none';
             finalCard.hidden = false;
             finalCard.scrollIntoView({ behavior: 'smooth' });
         });
-}
-
-document.getElementById('copyBtn').addEventListener('click', async () => {
+} document.getElementById('copyBtn').addEventListener('click', async () => {
     const html = finalArticle.innerHTML || '';
     try {
         await navigator.clipboard.writeText(html);
