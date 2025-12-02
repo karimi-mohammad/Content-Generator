@@ -55,15 +55,15 @@ form.addEventListener('submit', async e => {
         Site_Posts: document.getElementById('site_posts').value ? document.getElementById('site_posts').value.split('\n') : []
     };
     try {
-        const resp = await fetch(`${API_BASE}/generate-sections`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+        const resp = await fetch(`${API_BASE}/generate-outline`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
         if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
         const data = await resp.json();
-        if (data.parsed && data.parsed.sections) {
-            state.sections = data.parsed.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
-        } else if (data.parsed && data.parsed.title) {
+        if (data.data && data.data.sections) {
+            state.sections = data.data.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
+        } else if (data.data && data.data.title) {
             // When only title provided, attempt to create default outline from parsed
-            if (Array.isArray(data.parsed.sections)) {
-                state.sections = data.parsed.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
+            if (Array.isArray(data.data.sections)) {
+                state.sections = data.data.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
             } else {
                 state.sections = createMockSections(topic);
             }
@@ -71,7 +71,7 @@ form.addEventListener('submit', async e => {
             state.sections = createMockSections(topic);
         }
     } catch (err) {
-        console.warn('Backend /generate-sections failed, using mock:', String(err));
+        console.warn('Backend /generate-outline failed, using mock:', String(err));
         state.sections = createMockSections(topic);
     }
     sectionsCard.hidden = false;
