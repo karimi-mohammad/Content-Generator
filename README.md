@@ -156,7 +156,8 @@ curl -X POST http://localhost:4000/api/generate-outline \
     "SITE_NAME_SUBJECT": "Educational Site",
     "Site_Posts": []
   }'
-  ```
+```
+
 ## Contribution Guide
 
 We welcome contributions to improve this project!
