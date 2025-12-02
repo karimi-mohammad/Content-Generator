@@ -6,13 +6,13 @@ A simple AI-powered article generator built with Node.js and Express, featuring 
 
 This project provides an automated workflow for generating educational articles or content pieces. It leverages Google's Gemini (Generative Language API) to create article outlines, generate section content with continuity, and convert the final Markdown output to WordPress-friendly HTML. The application includes a simple, user-friendly frontend for editing and managing the generated content.
 
-The motivation behind this tool is to streamline content creation for educational websites, particularly for subjects like Arabic language learning, by automating the repetitive aspects of article writing while maintaining quality and coherence.
+The motivation behind this tool is to streamline content creation for websites, by automating the repetitive aspects of article writing while maintaining quality and coherence.
 
 ## Demo / Screenshots
 
 ![Content Generator UI](https://github.com/karimi-mohammad/Content-Generator/blob/main/docs/file/Screenshot.png)
 
-Sample screenshot of the article generation interface (placeholder - replace with actual image)
+Sample screenshot of the article generation interface
 
 For API-based demos:
 
@@ -156,6 +156,7 @@ curl -X POST http://localhost:4000/api/generate-outline \
     "SITE_NAME_SUBJECT": "Educational Site",
     "Site_Posts": []
   }'
+  ```
 ## Contribution Guide
 
 We welcome contributions to improve this project!
