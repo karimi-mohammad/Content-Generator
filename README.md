@@ -4,7 +4,7 @@ A simple AI-powered article generator built with Node.js and Express, featuring 
 
 ## Description / Overview
 
-This project provides an automated workflow for generating educational articles or content pieces. It leverages Google's Gemini (Generative Language API) to create article outlines, generate section content with continuity, and convert the final Markdown output to WordPress-friendly HTML. The application includes a simple, user-friendly frontend for editing and managing the generated content.
+This project provides an automated workflow for generating educational articles or content pieces. It leverages Google's Gemini (Generative Language API) to create article outlines, generate section content with continuity, convert Markdown to HTML, generate SEO information for topics, and optimize existing text for SEO. The application includes a simple, user-friendly frontend for editing and managing the generated content.
 
 The motivation behind this tool is to streamline content creation for websites, by automating the repetitive aspects of article writing while maintaining quality and coherence.
 
@@ -18,6 +18,8 @@ For API-based demos:
 
 - **Generate Outline Endpoint**: `POST /api/generate-outline` with topic and keywords returns structured sections.
 - **Generate Content Endpoint**: `POST /api/generate-content` produces section-specific content.
+- **Generate SEO Info Endpoint**: `POST /api/generate-seo-info` with topic returns SEO data in JSON format.
+- **Optimize SEO Endpoint**: `POST /api/optimize-seo` optimizes text for SEO.
 - **Convert Markdown Endpoint**: `POST /api/convert-markdown` transforms Markdown to HTML.
 
 ## Features
@@ -26,6 +28,8 @@ For API-based demos:
 - **Sequential Content Generation**: Generates content for individual sections with continuity from previous sections
 - **Bulk Generation**: Auto-generates all sections sequentially with a single click
 - **Markdown to HTML Conversion**: Converts generated content to WordPress-friendly HTML with specific formatting rules
+- **SEO Information Generation**: Generates comprehensive SEO data including keywords, title, meta description, and article structure for a given topic
+- **Text Optimization for SEO**: Optimizes existing text for better SEO by incorporating keywords naturally
 - **Interactive UI**: Client-side interface for editing sections, managing content, and downloading results
 - **Proxy Support**: Configurable HTTP/HTTPS proxy for outbound API requests
 - **Environment-Based Configuration**: Secure API key management via environment variables
@@ -46,6 +50,9 @@ content-generator-workflow/
 │   └── .env                  # Local environment (not committed)
 └── client/                   # Static frontend
     ├── index.html            # Main UI page
+    ├── seo.html              # SEO information generation tool
+    ├── optimize.html         # Text optimization for SEO tool
+    ├── markdown.html         # Markdown to HTML converter
     └── assets/
         ├── app.js            # Frontend JavaScript logic
         └── styles.css        # UI styles
@@ -113,25 +120,18 @@ The server will start on `http://localhost:4000` and serve the client interface.
 
 1. **Access the Application**: Open `http://localhost:4000` in your web browser.
 
-2. **Enter Initial Parameters**:
-   - Topic: Main article subject
-   - Tone: Writing style (e.g., educational, formal)
-   - Keywords: Comma-separated SEO keywords
-   - Desired Length: Target word count
-   - Target Audience: Intended readers
+2. **Main Article Generation**:
+   - Enter Initial Parameters: Topic, tone, keywords, desired length, target audience
+   - Generate Outline: Click "تولید بخش‌ها" to get suggested sections
+   - Edit Sections: Modify titles and add notes
+   - Generate Content: Use individual or bulk generation
+   - Convert and Download: Get HTML output
 
-3. **Generate Outline**: Click "تولید بخش‌ها" to get suggested article sections.
+3. **SEO Tools**:
+   - **SEO Information Generator**: Go to `http://localhost:4000/seo.html`, enter a topic, and get comprehensive SEO data (keywords, title, meta description, etc.)
+   - **Text Optimizer**: Go to `http://localhost:4000/optimize.html`, enter text and keywords to optimize for SEO
 
-4. **Edit Sections**: In the suggested sections panel, modify titles and add notes as needed.
-
-5. **Generate Content**:
-   - Generate individual sections using "تولید محتوا" buttons
-   - Or generate all sections automatically with "تولید همه بخش‌ها"
-
-6. **Convert and Download**:
-   - The system automatically converts Markdown to HTML
-   - Use "تبدیل مجدد به HTML" to re-convert if needed
-   - Copy HTML with "کپی HTML" or download with "دانلود"
+4. **Markdown Converter**: Use `http://localhost:4000/markdown.html` to convert Markdown to WordPress-friendly HTML
 
 ### API Usage Examples
 
@@ -158,7 +158,42 @@ curl -X POST http://localhost:4000/api/generate-outline \
   }'
 ```
 
-**Optimize for SEO (New)**:
+**Generate SEO Information**:
+
+```bash
+curl -X POST http://localhost:4000/api/generate-seo-info \
+  -H "Content-Type: application/json" \
+  -d '{
+    "topic": "آموزش برنامه‌نویسی پایتون"
+  }'
+```
+
+Response:
+
+```json
+{
+  "status": 200,
+  "data": {
+    "title": "آموزش برنامه‌نویسی پایتون برای مبتدیان",
+    "meta_description": "آموزش کامل برنامه‌نویسی پایتون از پایه تا پیشرفته...",
+    "snippet": "یادگیری برنامه‌نویسی پایتون آسان و کاربردی است...",
+    "keywords": {
+      "main": ["پایتون", "برنامه‌نویسی"],
+      "secondary": ["آموزش پایتون", "کد نویسی"],
+      "long_tail": ["آموزش برنامه‌نویسی پایتون از صفر", "چگونه پایتون یاد بگیریم"]
+    },
+    "outline": [
+      {
+        "h1": "آموزش برنامه‌نویسی پایتون",
+        "h2": ["مقدمه", "نصب پایتون"],
+        "h3": ["مزایای پایتون", "نصب در ویندوز"]
+      }
+    ]
+  }
+}
+```
+
+**Optimize for SEO**:
 
 ```bash
 curl -X POST http://localhost:4000/api/optimize-seo \
