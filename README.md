@@ -162,92 +162,185 @@ We welcome contributions to improve this project!
 
 ### Development Workflow
 
-1. **Fork the Repository**: Create your own fork on GitHub
-2. **Create a Feature Branch**: `git checkout -b feature/your-feature-name`
-3. **Make Changes**: Implement your improvements
-4. **Test Thoroughly**: Ensure all functionality works correctly
-5. **Submit a Pull Request**: Describe your changes and their benefits
+# Content Generator Workflow
 
-### Guidelines
+A developer-focused prototype that automates article creation using the Google Generative Language (Gemini) API. It provides an Express-based API and a lightweight static frontend to generate outlines, produce sectioned content, and convert Markdown to WordPress-friendly HTML.
 
-- Use environment variables for configuration (no hard-coded secrets)
-- Add appropriate error handling and logging
-- Update documentation for any new features
-- Follow existing code style and structure
+**One-line Description**
+- A small Node.js app that generates SEO-aware article outlines and section content using Gemini and converts Markdown to WordPress-ready HTML.
 
-### Suggested Improvements
+**Description / Overview**
+- Purpose: Accelerate content production by automating repetitive writing tasks while preserving control for editors.
+- Motivation: Reduce time spent on outlining, drafting, and formatting content for educational and multilingual sites (the project includes Persian/Arabic-focused prompts). The app helps teams iterate faster on article drafts and export ready-to-paste HTML for WordPress.
+- What it solves: Produces structured outlines, generates coherent section content with continuity between sections, and formats Markdown into a constrained HTML output suitable for WordPress editors.
 
-- Add rate limiting for API calls
-- Implement caching for repeated requests
-- Expand frontend with more editing capabilities
-- Add support for multiple AI providers
-- Include comprehensive test suite
+**Demo / Screenshots**
+- Screenshot (placeholder): ![Content Generator UI](https://via.placeholder.com/900x420?text=Content+Generator+Workflow+UI)
+- Example API endpoints (server exposes these under the `/api` prefix):
+  - `GET /api/test-gemini` — test connectivity to the Gemini API.
+  - `POST /api/generate-outline` — produce an article outline (expects JSON body with `Topic`, `SITE_NAME_SUBJECT`, `SEO_KeyWords`, etc.).
+  - `POST /api/generate-content` — generate a single section's Markdown (accepts `subject`, `part`, `length`, `previousContent`, etc.).
+  - `POST /api/convert-markdown` — convert Markdown to constrained HTML for WordPress editors.
 
-## Authors
+**Features**
+- **Outline generation**: Create H1/H2/H3 outlines with per-section word estimates.
+- **Chunked section generation**: Produce article sections sequentially while passing previous content to maintain coherence.
+- **Markdown → WordPress HTML**: Convert Markdown into limited HTML (no <p>/<h> tags; spans with `font-size: 14pt;` as required by the formatter).
+- **Static frontend**: Minimal UI to generate, preview, edit, and download content.
+- **Proxy support**: Honor `HTTP_PROXY` / `HTTPS_PROXY` environment variables for outbound requests.
+- **Environment-driven config**: Keeps API keys and proxies outside source control.
 
-- **<YOUR_NAME>** - Initial development - [GitHub Profile](https://github.com/yourusername)
+**Project Structure**
+```
 
-## Badges
+content-generator-workflow/
+├── README.md
+├── backend/
+│   ├── package.json
+│   ├── server.js            # Express server (serves client and /api routes)
+│   └── routes/
+│       └── api.js           # API handlers for Gemini integration and conversion
+├── client/
+│   ├── index.html
+│   └── assets/
+│       ├── app.js
+│       └── styles.css
+└── WORKFLOW.MD / UI.md      # Notes and UI design (optional)
 
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
-[![Express.js](https://img.shields.io/badge/express-5.2.0-lightgrey)](https://expressjs.com/)
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![GitHub Issues](https://img.shields.io/github/issues/yourusername/content-generator-workflow.svg)](https://github.com/yourusername/content-generator-workflow/issues)
-[![GitHub Stars](https://img.shields.io/github/stars/yourusername/content-generator-workflow.svg)](https://github.com/yourusername/content-generator-workflow/stargazers)
+```
+
+**Prerequisites**
+- **Node.js** v18 or newer
+- **npm** (bundled with Node.js)
+- **Google Gemini API Key** (set as `GEMINI_API_KEY` or `GOOGLE_API_KEY` in `backend/.env` or your environment)
+- Optional: HTTP/HTTPS proxy if your network requires it (`HTTP_PROXY` / `HTTPS_PROXY`).
+
+**Installation & Setup**
+
+1. Clone the repository and change into the project folder:
+```bash
+git clone <repository-url>
+cd content-generator-workflow
+```
+
+2. Install backend dependencies:
+
+```bash
+cd backend
+npm install
+```
+
+3. Configure environment variables.
+
+- Copy the example environment file:
+
+```powershell
+Copy-Item .env.example -Destination .env
+```
+
+- Edit `backend/.env` and set your API key:
+
+```env
+GEMINI_API_KEY=your_actual_google_gemini_api_key_here
+# (Optional)
+HTTP_PROXY=http://127.0.0.1:12334
+HTTPS_PROXY=http://127.0.0.1:12334
+```
+
+4. Start the server (development):
+
+```bash
+# From backend/
+npm start
+
+# Or with auto-reload (if configured):
+npm run dev
+```
+
+The app serves the static UI from `client/` and listens on `http://localhost:4000` by default. The API is available under `http://localhost:4000/api`.
+
+**Usage**
+
+- Open the UI: `http://localhost:4000` in a browser.
+- Typical workflow:
+  1. Provide topic, tone, keywords, and target audience.
+  2. Generate an outline via the UI or `POST /api/generate-outline`.
+  3. Generate each section (or bulk-generate) using `POST /api/generate-content`.
+  4. Convert the final Markdown with `POST /api/convert-markdown` and paste the returned HTML into WordPress.
+
+API examples (curl):
+
+```bash
+# Test Gemini connectivity
+curl http://localhost:4000/api/test-gemini
+
+# Generate outline
+curl -X POST http://localhost:4000/api/generate-outline \
+  -H "Content-Type: application/json" \
+  -d '{
+    "Topic": "Arabic Grammar Basics",
+    "tone": "educational",
+    "desired_length": 1000,
+    "target_audience": "students",
+    "SEO_KeyWords": ["arabic","grammar"],
+    "SERP_titles": ["Title 1"],
+    "SITE_NAME_SUBJECT": "Educational Site",
+    "Site_Posts": []
+  }'
+
+# Generate a section
+curl -X POST http://localhost:4000/api/generate-content \
+  -H "Content-Type: application/json" \
+  -d '{
+    "subject": "Arabic Grammar Basics",
+    "part": "Introduction",
+    "length": 250,
+    "SEO_KeyWords": ["arabic"],
+    "SITE_NAME_SUBJECT": "Educational Site",
+    "notes": "Focus on beginner-friendly examples",
+    "tone": "educational",
+    "target_audience": "students",
+    "sectionIndex": 1,
+    "previousContent": ""
+  }'
+
+# Convert Markdown to HTML
+curl -X POST http://localhost:4000/api/convert-markdown \
+  -H "Content-Type: application/json" \
+  -d '{ "markdown_content": "# Title\\nSome paragraph content..." }'
+```
+
+**Contribution Guide**
+
+- Branching: Use feature branches (`feature/your-feature-name`) and open a PR against `main`.
+- Issues: Open issues describing bugs or feature requests with steps to reproduce and expected behavior.
+- PRs: Keep changes small, signpost breaking changes, and include tests or manual verification steps where applicable.
+- Commit messages: Use clear imperative messages (e.g., "Add generate-outline validation").
+
+**Authors**
+
+- **<YOUR_NAME>** — Initial development. Replace with your name and GitHub link.
+
+**Badges**
+
+- ![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
+- ![Express.js](https://img.shields.io/badge/express-5.x-lightgrey)
+- ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
 ---
 
-*This is a prototype for development/internal use. Not intended for production without additional security and scalability enhancements.*
-  - Body (example):
+**Notes & Dev Tips**
 
-    ```json
-    {
-      "Topic": "آموزش جمع کرنے",
-      "tone": "آموزشی",
-      "desired_length": 1000,
-      "target_audience": "دانش‌آموزان",
-      "SEO_KeyWords": ["عربی","تمرین"],
-      "SERP_titles": ["عنوان1","عنوان2"],
-      "SITE_NAME_SUBJECT": "سایت آموزشی",
-      "Site_Posts": []
-    }
-    ```
+- `backend/server.js` serves the static `client/` folder and mounts API routes from `backend/routes/api.js`.
+- The API expects a server-side API key set via `GEMINI_API_KEY` or `GOOGLE_API_KEY` (see `server.js` warnings).
+- `generate-content` accepts `previousContent` to keep continuity between sequentially-generated sections.
+- `convert-markdown` is tailored to output HTML limited to `span` elements with `style="font-size: 14pt;"`, `strong`, `ul/li` and `<hr />` as described in the route handler.
 
-  - Response: JSON with `title`, `sections` and `internal_links` fields
+If you'd like, I can:
 
-- `POST /api/generate-content`
-  - Body example:
-
-    ```json
-    {
-      "subject": "آموزش جمع",
-      "part": "مقدمه",
-      "length": 200,
-      "SEO_KeyWords": ["عربی"],
-      "SITE_NAME_SUBJECT": "سایت آموزشی",
-      "notes": "نکات خاص..",
-      "tone": "آموزشی",
-      "target_audience": "دانش‌آموزان",
-      "sectionIndex": 1,
-      "previousContent": "..."
-    }
-    ```
-
-  - Response: `{ status: <HTTP status>, content: '<generated_markdown>' }`
-
-- `POST /api/convert-markdown`
-  - Body: `{ "markdown_content": "# Title\nYour article..." }`
-  - Response: `{ status: <HTTP status>, html: '<converted_html>' }`
+- run the server locally and verify the `/api/test-gemini` route (requires an API key),
+- or open a PR with this README and commit it for you.
 
 ---
 
-## Notes & Dev Tips
-
-- The `previousContent` passed to `/generate-content` is designed to be the immediate previous section's Markdown content — this helps the model maintain continuity without resending the entire article.
-- The front-end includes a `تولید همه بخش‌ها` flow that sequentially generates content for each ungenerated section. You can interrupt it by reloading the page.
-- By default, the Gemini API key and proxy are hard-coded to get you started quickly. Replace them with secure environment variables in production.
-- The `convert-markdown` endpoint expects clean Markdown and returns a WordPress-friendly HTML that uses only the allowed inline style (font-size) and limited tags, as per the code's instructions to the AI model.
-
----
-
-*This is a prototype for development/internal use. Not intended for production without additional security and scalability enhancements.*
+*This README is intended as a developer-oriented starting point. Please replace placeholders (API URL, authors, badges) with real values for production use.*
