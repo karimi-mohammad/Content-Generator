@@ -10,7 +10,7 @@ The motivation behind this tool is to streamline content creation for educationa
 
 ## Demo / Screenshots
 
-![Content Generator UI](./docs/file/Screenshot.png)
+![Content Generator UI](https://github.com/karimi-mohammad/Content-Generator/blob/main/docs/file/Screenshot.png)
 
 Sample screenshot of the article generation interface (placeholder - replace with actual image)
 
