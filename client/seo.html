@@ -7,6 +7,46 @@
     <title>تولید اطلاعات سئویی</title>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="./assets/styles.css" />
+    <style>
+        .result-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+
+        .result-item h3 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .result-item p,
+        .result-item ul {
+            margin: 10px 0;
+        }
+
+        .result-item ul {
+            padding-left: 20px;
+        }
+
+        .outline-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #fff;
+            border-left: 4px solid #007bff;
+        }
+
+        .outline-section h4 {
+            margin-top: 0;
+            color: #007bff;
+        }
+
+        .outline-section ul {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+    </style>
 </head>
 
 <body>
@@ -27,41 +67,134 @@
 
         <section class="card" id="resultCard" hidden>
             <h2>اطلاعات سئویی تولید شده</h2>
-            <pre id="result"></pre>
+            <div id="seoResults">
+                <div class="result-item">
+                    <h3>عنوان مقاله</h3>
+                    <p id="seoTitle"></p>
+                </div>
+                <div class="result-item">
+                    <h3>متا دیسکریپشن</h3>
+                    <p id="seoMetaDescription"></p>
+                </div>
+                <div class="result-item">
+                    <h3>چکیده کوتاه (Snippet)</h3>
+                    <p id="seoSnippet"></p>
+                </div>
+                <div class="result-item">
+                    <h3>کلمات کلیدی اصلی</h3>
+                    <ul id="seoMainKeywords"></ul>
+                </div>
+                <div class="result-item">
+                    <h3>کلمات کلیدی فرعی</h3>
+                    <ul id="seoSecondaryKeywords"></ul>
+                </div>
+                <div class="result-item">
+                    <h3>کلمات کلیدی Long Tail</h3>
+                    <ul id="seoLongTailKeywords"></ul>
+                </div>
+                <div class="result-item">
+                    <h3>ساختار مقاله</h3>
+                    <div id="seoOutline"></div>
+                </div>
+            </div>
         </section>
     </div>
 
     <script>
-        document.getElementById('generate').addEventListener('click', async () => {
-            const topic = document.getElementById('topic').value.trim();
-            if (!topic) {
-                alert('لطفاً موضوع را وارد کنید.');
-                return;
-            }
-
-            document.getElementById('generate').disabled = true;
-            document.getElementById('generate').textContent = 'در حال پردازش...';
-
-            try {
-                const response = await fetch('/api/generate-seo-info', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ topic })
-                });
-
-                const data = await response.json();
-                if (response.ok) {
-                    document.getElementById('result').textContent = data.seo_info;
-                    document.getElementById('resultCard').hidden = false;
-                } else {
-                    alert('خطا: ' + data.error);
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('generate').addEventListener('click', async () => {
+                const topic = document.getElementById('topic').value.trim();
+                if (!topic) {
+                    alert('لطفاً موضوع را وارد کنید.');
+                    return;
                 }
-            } catch (error) {
-                alert('خطای شبکه: ' + error.message);
-            } finally {
-                document.getElementById('generate').disabled = false;
-                document.getElementById('generate').textContent = 'تولید اطلاعات سئویی';
-            }
+
+                document.getElementById('generate').disabled = true;
+                document.getElementById('generate').textContent = 'در حال پردازش...';
+
+                try {
+                    const response = await fetch('/api/generate-seo-info', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ topic })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        const seoData = data.data;
+                        document.getElementById('seoTitle').textContent = seoData.title;
+                        document.getElementById('seoMetaDescription').textContent = seoData.meta_description;
+                        document.getElementById('seoSnippet').textContent = seoData.snippet;
+
+                        // Keywords
+                        const mainUl = document.getElementById('seoMainKeywords');
+                        mainUl.innerHTML = '';
+                        seoData.keywords.main.forEach(kw => {
+                            const li = document.createElement('li');
+                            li.textContent = kw;
+                            mainUl.appendChild(li);
+                        });
+
+                        const secondaryUl = document.getElementById('seoSecondaryKeywords');
+                        secondaryUl.innerHTML = '';
+                        seoData.keywords.secondary.forEach(kw => {
+                            const li = document.createElement('li');
+                            li.textContent = kw;
+                            secondaryUl.appendChild(li);
+                        });
+
+                        const longTailUl = document.getElementById('seoLongTailKeywords');
+                        longTailUl.innerHTML = '';
+                        seoData.keywords.long_tail.forEach(kw => {
+                            const li = document.createElement('li');
+                            li.textContent = kw;
+                            longTailUl.appendChild(li);
+                        });
+
+                        // Outline
+                        const outlineDiv = document.getElementById('seoOutline');
+                        outlineDiv.innerHTML = '';
+                        seoData.outline.forEach(section => {
+                            const sectionDiv = document.createElement('div');
+                            sectionDiv.className = 'outline-section';
+                            const h1 = document.createElement('h4');
+                            h1.textContent = 'H1: ' + section.h1;
+                            sectionDiv.appendChild(h1);
+
+                            if (section.h2.length > 0) {
+                                const h2Ul = document.createElement('ul');
+                                section.h2.forEach(h2 => {
+                                    const li = document.createElement('li');
+                                    li.textContent = 'H2: ' + h2;
+                                    h2Ul.appendChild(li);
+                                });
+                                sectionDiv.appendChild(h2Ul);
+                            }
+
+                            if (section.h3.length > 0) {
+                                const h3Ul = document.createElement('ul');
+                                section.h3.forEach(h3 => {
+                                    const li = document.createElement('li');
+                                    li.textContent = 'H3: ' + h3;
+                                    h3Ul.appendChild(li);
+                                });
+                                sectionDiv.appendChild(h3Ul);
+                            }
+
+                            outlineDiv.appendChild(sectionDiv);
+                        });
+
+                        document.getElementById('resultCard').hidden = false;
+                    } else {
+                        alert('خطا: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('خطای شبکه: ' + error.message);
+                } finally {
+                    document.getElementById('generate').disabled = false;
+                    document.getElementById('generate').textContent = 'تولید اطلاعات سئویی';
+                }
+            });
         });
     </script>
 </body>

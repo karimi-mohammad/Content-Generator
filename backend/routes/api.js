@@ -370,29 +370,41 @@ router.post('/generate-seo-info', async (req, res) => {
         return res.status(400).json({ error: 'Missing required field: topic' });
     }
 
-    const systemPrompt = `تو یک متخصص سئو حرفه‌ای، تحلیل‌گر محتوا و کارشناس تحقیق کلمات کلیدی هستی.
-وظیفه تو این است که با دریافت یک موضوع از کاربر، بهترین اطلاعات سئویی ممکن را تولید کنی.
+    const systemPrompt = `تو یک متخصص سئو حرفه‌ای هستی و وظیفه‌ات تولید خروجی‌های دقیق سئویی بر اساس موضوعی است که کاربر می‌دهد.
 
 قوانین:
-1. نتایج باید دقیق، قابل استفاده و براساس اصول سئوی 2024 باشند.
-2. کلمات کلیدی را به سه دسته تقسیم کن: اصلی، فرعی و طولانی (Long Tail).
-3. عنوان مقاله باید جذاب، قابل کلیک (CTR بالا) و بین 50 تا 65 کاراکتر باشد.
+1. تمام خروجی باید فقط و فقط در قالب JSON باشد.
+2. کلمات کلیدی را در سه دسته ارائه بده: اصلی، فرعی و Long Tail.
+3. عنوان مقاله باید جذاب و بین 50 تا 65 کاراکتر باشد.
 4. متا دیسکریپشن باید بین 120 تا 155 کاراکتر باشد.
-5. یک چکیده کوتاه 1–2 جمله‌ای ارائه بده که مناسب نمایش در Rich Results باشد.
-6. اگر نیاز بود پیشنهاد ساختار مقاله (H1, H2, H3) را هم ارائه بده.
-7. فقط خروجی نهایی را ارائه بده؛ هیچ توضیح اضافی ننویس.`;
+5. چکیده باید 1 الی 2 جمله کوتاه باشد.
+6. اگر کاربر درخواست کرد، ساختار مقاله (H1, H2, H3) را هم تولید کن.
+7. خارج از JSON هیچ متنی نمایش نده.`;
 
-    const userPrompt = `برای موضوع زیر، اطلاعات سئویی کامل تولید کن:
+    const userPrompt = `برای موضوع زیر، خروجی کامل سئویی تولید کن و فقط در قالب JSON برگردان.
 
 موضوع:
 ${topic}
 
-خروجی مورد نیاز:
-- کلمات کلیدی اصلی، فرعی و Long Tail
-- عنوان پیشنهادی
-- متا دیسکریپشن
-- چکیده کوتاه (Snippet)
-- پیشنهاد ساختار مقاله (اختیاری)`;
+ساختار JSON مورد انتظار:
+
+{
+  "title": "",
+  "meta_description": "",
+  "snippet": "",
+  "keywords": {
+    "main": [],
+    "secondary": [],
+    "long_tail": []
+  },
+  "outline": [
+    {
+      "h1": "",
+      "h2": [],
+      "h3": []
+    }
+  ]
+}`;
 
     const text = systemPrompt + "\n\n" + userPrompt;
 
@@ -409,9 +421,18 @@ ${topic}
         if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
         const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
 
-        const generatedText = response.data.candidates[0].content.parts[0].text;
-        // Return the generated SEO info as text
-        res.status(200).json({ status: response.status, seo_info: generatedText.trim() });
+        const generatedText = response.data.candidates[0].content.parts[0].text.replace(/^```json\n/, '').replace(/\n```$/, '');
+        let result;
+        try {
+            result = JSON.parse(generatedText);
+        } catch (parseErr) {
+            return res.status(500).json({ error: 'Failed to parse JSON response', raw: generatedText });
+        }
+
+        res.status(200).json({
+            status: response.status,
+            data: result
+        });
     } catch (err) {
         console.error('Request failed:', err.message);
         if (err.response) {
