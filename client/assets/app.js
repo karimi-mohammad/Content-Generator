@@ -134,16 +134,37 @@ function compileFinalArticle() {
     const kwLine = state.keywords && state.keywords.length ? `کلمات کلیدی: ${state.keywords.join(', ')}\n\n` : '';
     const header = `موضوع: ${document.getElementById('topic').value}\n` + kwLine;
     const body = state.sections.map(s => `## ${s.title}\n\n${s.content}\n`).join('\n');
-    finalArticle.textContent = header + body;
-    finalCard.hidden = false;
-    finalCard.scrollIntoView({ behavior: 'smooth' });
+    const markdown = header + body;
+
+    // Convert to HTML
+    fetch(`${API_BASE}/convert-markdown`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown_content: markdown })
+    })
+        .then(resp => resp.json())
+        .then(data => {
+            if (data.html) {
+                finalArticle.innerHTML = data.html;
+            } else {
+                finalArticle.textContent = markdown; // fallback
+            }
+            finalCard.hidden = false;
+            finalCard.scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(err => {
+            console.warn('Convert to HTML failed, using markdown:', err);
+            finalArticle.textContent = markdown;
+            finalCard.hidden = false;
+            finalCard.scrollIntoView({ behavior: 'smooth' });
+        });
 }
 
 document.getElementById('downloadBtn').addEventListener('click', () => {
-    const text = finalArticle.textContent || '';
-    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const html = finalArticle.innerHTML || finalArticle.textContent || '';
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a'); a.href = url; a.download = 'article.txt';
+    const a = document.createElement('a'); a.href = url; a.download = 'article.html';
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
 });
 

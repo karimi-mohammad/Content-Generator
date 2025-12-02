@@ -162,7 +162,7 @@ router.post('/generate-content', async (req, res) => {
 
 - از کلمات کلیدی استفاده کن
 
-${notes ? `- نکات اضافی: ${notes}` : ''}
+${notes ? `- نکات اضافی: ${notes.replace(/`/g, "'")}` : ''}
 
 خروجی: فقط متن مقاله به فرمت Markdown بدون توضیحات اضافی.`;
 
@@ -188,10 +188,100 @@ ${notes ? `- نکات اضافی: ${notes}` : ''}
         });
 
         const generatedText = response.data.candidates[0].content.parts[0].text;
-        // Assuming the output is directly the markdown text, no JSON wrapper
+        // Assuming the output is directly the markdown text
         res.status(200).json({
             status: response.status,
             content: generatedText.trim()
+        });
+    } catch (err) {
+        console.error('Request failed:', err.message);
+        if (err.response) {
+            res.status(err.response.status).json({
+                error: 'Request failed',
+                status: err.response.status,
+                data: err.response.data
+            });
+        } else {
+            res.status(500).json({
+                error: 'Internal server error',
+                message: err.message
+            });
+        }
+    }
+});
+
+router.post('/convert-markdown', async (req, res) => {
+    const { markdown_content } = req.body;
+
+    if (!markdown_content) {
+        return res.status(400).json({ error: 'Missing markdown_content' });
+    }
+
+    const systemPrompt = `You are an expert content formatter AI trained to convert Markdown into clean,
+WordPress-friendly HTML.
+
+Your output MUST respect these rules:
+
+1. All paragraphs must be wrapped inside:
+   <span style="font-size: 14pt;"> ... </span>
+
+2. Bold text => <strong>...</strong>
+
+3. Bullet lists must be converted to:
+   <ul><li><span style="font-size: 14pt;">...</span></li></ul>
+
+4. Level-2 and level-3 headings must be converted to spans (NOT <h2> or <h3>):
+   Example:
+   ## عنوان  
+   → <span style="font-size: 14pt;"><strong>🔵 عنوان</strong></span>
+
+5. Horizontal lines in Markdown (--- or ***) must be converted to:
+   <hr />
+
+6. Tables must be converted to full <table><thead>…</thead><tbody>…</tbody></table>
+   with spans inside each cell.
+
+7. No <p>, no <h1-h6> tags allowed.
+
+8. Only clean HTML. No inline CSS except: style="font-size: 14pt;"
+
+9. Preserve Arabic diacritics, RTL structure, and spacing.
+
+You must ALWAYS generate valid HTML ready for WordPress editors like Classic Editor or RankMath.`;
+
+    const userPrompt = `این Markdown را به HTML مخصوص وردپرس تبدیل کن.  
+فقط خروجی HTML بده، بدون توضیحات اضافه.
+
+[Markdown ورودی من:]
+
+${markdown_content}`;
+
+    const text = systemPrompt + "\n\n" + userPrompt;
+
+    const payload = {
+        contents: [
+            {
+                role: "user",
+                parts: [{ text: text }]
+            }
+        ]
+    };
+
+    try {
+        const response = await axios.post(url, payload, {
+            headers: {
+                'X-goog-api-key': 'AIzaSyBIDAitGoaRXSi02fd2glT2bxIpmfvxk7A',
+                'Content-Type': 'application/json'
+            },
+            httpsAgent: proxyAgent,
+            timeout: 30000
+        });
+
+        const generatedText = response.data.candidates[0].content.parts[0].text;
+        // Assuming the output is directly the HTML
+        res.status(200).json({
+            status: response.status,
+            html: generatedText.trim()
         });
     } catch (err) {
         console.error('Request failed:', err.message);
