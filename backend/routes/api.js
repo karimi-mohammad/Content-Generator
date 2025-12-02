@@ -137,4 +137,75 @@ ${Site_Posts.join(', ')}
     }
 });
 
+router.post('/generate-content', async (req, res) => {
+    const { subject, part, length, SEO_KeyWords, SITE_NAME_SUBJECT } = req.body;
+
+    if (!subject || !part || !length || !SEO_KeyWords || !SITE_NAME_SUBJECT) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    const systemPrompt = `تو یک نویسنده حرفه ای مطلب و متخصص SEO فارسی هستی که برای یک وبسایت ${SITE_NAME_SUBJECT} مطالب حرفه ای و SEO شده مینویسی`;
+
+    const userPrompt = `موضوع کلی: ${subject}
+
+بخش: ${part}
+
+حداکثر طول: ${length}
+
+کلمات کلیدی: ${SEO_KeyWords.join(', ')}
+
+نکات لازم:
+
+- مطلبی برای این بخش با مشخصات داده شده باید تولید شود
+
+- در صورت نیاز برای توضیح بهتر مثال استفاده شود
+
+- از کلمات کلیدی استفاده کن
+
+خروجی: فقط متن مقاله به فرمت Markdown بدون توضیحات اضافی.`;
+
+    const text = systemPrompt + "\n\n" + userPrompt;
+
+    const payload = {
+        contents: [
+            {
+                role: "user",
+                parts: [{ text: text }]
+            }
+        ]
+    };
+
+    try {
+        const response = await axios.post(url, payload, {
+            headers: {
+                'X-goog-api-key': 'AIzaSyBIDAitGoaRXSi02fd2glT2bxIpmfvxk7A',
+                'Content-Type': 'application/json'
+            },
+            httpsAgent: proxyAgent,
+            timeout: 30000
+        });
+
+        const generatedText = response.data.candidates[0].content.parts[0].text;
+        // Assuming the output is directly the markdown text, no JSON wrapper
+        res.status(200).json({
+            status: response.status,
+            content: generatedText.trim()
+        });
+    } catch (err) {
+        console.error('Request failed:', err.message);
+        if (err.response) {
+            res.status(err.response.status).json({
+                error: 'Request failed',
+                status: err.response.status,
+                data: err.response.data
+            });
+        } else {
+            res.status(500).json({
+                error: 'Internal server error',
+                message: err.message
+            });
+        }
+    }
+});
+
 module.exports = router;

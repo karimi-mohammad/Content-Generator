@@ -87,7 +87,13 @@ sectionsList.addEventListener('click', async e => {
     if (action === 'generate') {
         btn.disabled = true; btn.textContent = 'در حال تولید...';
         try {
-            const payload = { topic: document.getElementById('topic').value, sectionTitle: sec.title, tone: document.getElementById('tone').value, desired_length: Number(document.getElementById('desired_length').value) || 400 };
+            const payload = { 
+                subject: document.getElementById('topic').value, 
+                part: sec.title, 
+                length: Number(document.getElementById('desired_length').value) || 400,
+                SEO_KeyWords: state.keywords,
+                SITE_NAME_SUBJECT: document.getElementById('site_name').value
+            };
             const resp = await fetch(`${API_BASE}/generate-content`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!resp.ok) throw new Error('server-error');
             const json = await resp.json();
