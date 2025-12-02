@@ -138,7 +138,7 @@ ${Site_Posts.join(', ')}
 });
 
 router.post('/generate-content', async (req, res) => {
-    const { subject, part, length, SEO_KeyWords, SITE_NAME_SUBJECT } = req.body;
+    const { subject, part, length, SEO_KeyWords, SITE_NAME_SUBJECT, notes } = req.body;
 
     if (!subject || !part || !length || !SEO_KeyWords || !SITE_NAME_SUBJECT) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -161,6 +161,8 @@ router.post('/generate-content', async (req, res) => {
 - در صورت نیاز برای توضیح بهتر مثال استفاده شود
 
 - از کلمات کلیدی استفاده کن
+
+${notes ? `- نکات اضافی: ${notes}` : ''}
 
 خروجی: فقط متن مقاله به فرمت Markdown بدون توضیحات اضافی.`;
 

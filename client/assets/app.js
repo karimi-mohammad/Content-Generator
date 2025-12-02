@@ -10,10 +10,10 @@ const API_BASE = 'http://localhost:4000/api';
 
 function createMockSections(topic) {
     return [
-        { title: 'مقدمه', content: '', status: 'pending' },
-        { title: 'تعاریف و نکات کلیدی', content: '', status: 'pending' },
-        { title: 'مثال‌ها و تمرین‌ها', content: '', status: 'pending' },
-        { title: 'نتیجه‌گیری', content: '', status: 'pending' }
+        { title: 'مقدمه', content: '', status: 'pending', notes: '', words: 100 },
+        { title: 'تعاریف و نکات کلیدی', content: '', status: 'pending', notes: '', words: 150 },
+        { title: 'مثال‌ها و تمرین‌ها', content: '', status: 'pending', notes: '', words: 200 },
+        { title: 'نتیجه‌گیری', content: '', status: 'pending', notes: '', words: 50 }
     ].map((s, i) => ({ ...s, id: i + 1 }));
 }
 
@@ -23,7 +23,8 @@ function renderSections() {
         const li = document.createElement('li'); li.className = 'section-item';
         li.innerHTML = `
       <div class="section-head">
-        <input class="sec-title" data-id="${sec.id}" value="${escapeHtml(sec.title)}">
+        <input class="sec-title" data-id="${sec.id}" value="${escapeHtml(sec.title)}"> (طول پیشنهادی: ${sec.words} کلمه)
+        <input class="sec-notes" data-id="${sec.id}" placeholder="نکات خاص برای این بخش (اختیاری)" value="${escapeHtml(sec.notes || '')}">
         <div class="section-controls">
           <button data-action="generate" data-id="${sec.id}">تولید محتوا</button>
           <button data-action="seo" data-id="${sec.id}" class="secondary">بررسی SEO</button>
@@ -59,11 +60,11 @@ form.addEventListener('submit', async e => {
         if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
         const data = await resp.json();
         if (data.data && data.data.sections) {
-            state.sections = data.data.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
+            state.sections = data.data.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending', notes: '', words: s.words || 100 }));
         } else if (data.data && data.data.title) {
             // When only title provided, attempt to create default outline from parsed
             if (Array.isArray(data.data.sections)) {
-                state.sections = data.data.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending' }));
+                state.sections = data.data.sections.map((s, i) => ({ id: i + 1, title: s.h || s.title || `بخش ${i + 1}`, content: '', status: 'pending', notes: '', words: s.words || 100 }));
             } else {
                 state.sections = createMockSections(topic);
             }
@@ -87,12 +88,13 @@ sectionsList.addEventListener('click', async e => {
     if (action === 'generate') {
         btn.disabled = true; btn.textContent = 'در حال تولید...';
         try {
-            const payload = { 
-                subject: document.getElementById('topic').value, 
-                part: sec.title, 
-                length: Number(document.getElementById('desired_length').value) || 400,
+            const payload = {
+                subject: document.getElementById('topic').value,
+                part: sec.title,
+                length: sec.words || Number(document.getElementById('desired_length').value) || 400,
                 SEO_KeyWords: state.keywords,
-                SITE_NAME_SUBJECT: document.getElementById('site_name').value
+                SITE_NAME_SUBJECT: document.getElementById('site_name').value,
+                notes: sec.notes || ''
             };
             const resp = await fetch(`${API_BASE}/generate-content`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!resp.ok) throw new Error('server-error');
@@ -119,6 +121,7 @@ sectionsList.addEventListener('input', e => {
     const sec = state.sections.find(s => s.id === id);
     if (t.classList.contains('sec-title')) sec.title = t.value;
     if (t.classList.contains('sec-body')) sec.content = t.value;
+    if (t.classList.contains('sec-notes')) sec.notes = t.value;
 });
 
 function checkIfAllGenerated() {
