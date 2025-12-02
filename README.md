@@ -175,7 +175,7 @@ A developer-focused prototype that automates article creation using the Google G
 - What it solves: Produces structured outlines, generates coherent section content with continuity between sections, and formats Markdown into a constrained HTML output suitable for WordPress editors.
 
 **Demo / Screenshots**
-- Screenshot (placeholder): ![Content Generator UI](https://via.placeholder.com/900x420?text=Content+Generator+Workflow+UI)
+- Screenshot (placeholder): ![Content Generator UI](./docs/file/Screenshot.png)
 - Example API endpoints (server exposes these under the `/api` prefix):
   - `GET /api/test-gemini` — test connectivity to the Gemini API.
   - `POST /api/generate-outline` — produce an article outline (expects JSON body with `Topic`, `SITE_NAME_SUBJECT`, `SEO_KeyWords`, etc.).
