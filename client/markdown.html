@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>تبدیل Markdown به HTML</title>
+    <link rel="stylesheet" href="./assets/styles.css" />
+    <style>
+        .preview {
+            border: 1px solid #eef6ff;
+            padding: 16px;
+            border-radius: 8px;
+            background: #fff;
+            min-height: 160px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 12px
+        }
+
+        .raw-html {
+            width: 100%;
+            min-height: 120px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>تبدیل Markdown به HTML (قابل کپی و دانلود)</h1>
+            <p class="muted">متن Markdown خود را وارد کنید؛ از API سرور برای تبدیل استفاده می‌شود. اگر API در دسترس
+                نبود، تبدیل در سمت کلاینت انجام خواهد شد.</p>
+        </header>
+
+        <section class="card">
+            <label for="markdown">متن Markdown</label>
+            <textarea id="markdown" placeholder="# عنوان\n\nمتن خود را اینجا بچسبانید..."></textarea>
+
+            <div class="controls">
+                <button id="convert">تبدیل به HTML</button>
+                <button id="copy" class="secondary">کپی HTML</button>
+                <button id="download" class="secondary">دانلود HTML</button>
+                <span id="status" class="muted" style="margin-right:12px"></span>
+            </div>
+
+            <label style="margin-top:12px">پیش‌نمایش HTML تولید شده</label>
+            <div id="preview" class="preview"></div>
+
+            <label style="margin-top:12px">HTML خام (برای کپی یا ویرایش)</label>
+            <textarea id="rawHtml" class="raw-html"></textarea>
+        </section>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="./assets/markdown.js"></script>
+</body>
+
+</html>
