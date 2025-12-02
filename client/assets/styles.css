@@ -68,6 +68,47 @@ label {
     text-align: right;
 }
 
+/* tools bar */
+.tools-bar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    background: var(--card);
+    padding: 10px 12px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(2, 6, 23, 0.04);
+    overflow-x: auto;
+    margin-bottom: 3%;
+}
+
+.tools-bar .tool {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--accent);
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: transparent;
+    border: 1px solid #e6eef7;
+    font-weight: 600;
+}
+
+.tools-bar .tool:hover {
+    background: var(--glass);
+}
+
+@media (max-width:640px) {
+    .tools-bar {
+        gap: 8px;
+    }
+
+    .tools-bar .tool {
+        padding: 8px 10px;
+        font-size: 14px;
+    }
+}
+
 .muted {
     color: var(--muted);
     font-size: 13px;
