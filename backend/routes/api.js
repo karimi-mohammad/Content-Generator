@@ -138,7 +138,7 @@ ${Site_Posts.join(', ')}
 });
 
 router.post('/generate-content', async (req, res) => {
-    const { subject, part, length, SEO_KeyWords, SITE_NAME_SUBJECT, notes } = req.body;
+    const { subject, part, length, SEO_KeyWords, SITE_NAME_SUBJECT, notes, tone, target_audience } = req.body;
 
     if (!subject || !part || !length || !SEO_KeyWords || !SITE_NAME_SUBJECT) {
         return res.status(400).json({ error: 'Missing required fields' });
@@ -153,6 +153,10 @@ router.post('/generate-content', async (req, res) => {
 حداکثر طول: ${length}
 
 کلمات کلیدی: ${SEO_KeyWords.join(', ')}
+
+لحن: ${tone || 'آموزشی، ساده و رسمی'}
+
+مخاطب: ${target_audience || 'دانش‌آموزان'}
 
 نکات لازم:
 

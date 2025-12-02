@@ -94,7 +94,9 @@ sectionsList.addEventListener('click', async e => {
                 length: sec.words || Number(document.getElementById('desired_length').value) || 400,
                 SEO_KeyWords: state.keywords,
                 SITE_NAME_SUBJECT: document.getElementById('site_name').value,
-                notes: sec.notes || ''
+                notes: sec.notes || '',
+                tone: document.getElementById('tone').value,
+                target_audience: document.getElementById('target_audience').value
             };
             const resp = await fetch(`${API_BASE}/generate-content`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
             if (!resp.ok) throw new Error('server-error');
