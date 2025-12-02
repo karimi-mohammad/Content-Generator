@@ -7,6 +7,7 @@ const finalArticle = document.getElementById('finalArticle');
 
 let state = { sections: [], keywords: [] };
 const API_BASE = 'http://localhost:4000/api';
+let finalMarkdown = '';
 
 // Ensure loading is hidden on load
 document.getElementById('loading').style.display = 'none';
@@ -96,10 +97,11 @@ sectionsList.addEventListener('click', async e => {
     const sec = state.sections.find(s => s.id === id);
     if (action === 'generate') {
         btn.disabled = true; btn.textContent = 'در حال تولید...';
+        document.getElementById('loading').style.display = 'flex';
         try {
             const sectionIndex = state.sections.indexOf(sec) + 1;
-            const previousSections = state.sections.slice(0, state.sections.indexOf(sec));
-            const previousContent = previousSections.map(s => s.content).join('\n');
+            const previousSection = state.sections[state.sections.indexOf(sec) - 1];
+            const previousContent = previousSection ? previousSection.content : '';
             const payload = {
                 subject: document.getElementById('topic').value,
                 part: sec.title,
@@ -123,6 +125,7 @@ sectionsList.addEventListener('click', async e => {
         sec.status = 'generated';
         renderSections();
         btn.disabled = false; btn.textContent = 'تولید محتوا';
+        document.getElementById('loading').style.display = 'none';
         checkIfAllGenerated();
     } else if (action === 'seo') {
         const textarea = document.querySelector(`textarea[data-id="${id}"]`);
@@ -152,6 +155,7 @@ function compileFinalArticle() {
     const header = `موضوع: ${document.getElementById('topic').value}\n` + kwLine;
     const body = state.sections.map(s => `${s.content}\n`).join('\n');
     const markdown = header + body;
+    finalMarkdown = markdown;
 
     // Convert to HTML
     fetch(`${API_BASE}/convert-markdown`, {
@@ -197,6 +201,28 @@ document.getElementById('downloadBtn').addEventListener('click', () => {
 });
 
 document.getElementById('restartBtn').addEventListener('click', () => location.reload());
+
+document.getElementById('retryConvertBtn').addEventListener('click', async () => {
+    if (!finalMarkdown) return alert('هیچ محتوایی برای تبدیل وجود ندارد.');
+    document.getElementById('loading').style.display = 'flex';
+    try {
+        const resp = await fetch(`${API_BASE}/convert-markdown`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ markdown_content: finalMarkdown })
+        });
+        const data = await resp.json();
+        if (data.html) {
+            finalArticle.innerHTML = data.html;
+        } else {
+            finalArticle.textContent = finalMarkdown;
+        }
+    } catch (err) {
+        console.warn('Retry convert failed:', err);
+        finalArticle.textContent = finalMarkdown;
+    }
+    document.getElementById('loading').style.display = 'none';
+});
 
 function mockGenerateContent(topic, title) {
     return `${title} — در این بخش به موضوع «${topic}» پرداخته می‌شود. مثال‌ها، توضیحات و نکات آموزشی به صورت ساده و قابل‌فهم آورده شده است.`;
