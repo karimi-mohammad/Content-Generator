@@ -362,4 +362,68 @@ ${Array.isArray(keywords) ? keywords.join(', ') : keywords}
     }
 });
 
+// New endpoint: Generate SEO information for a topic
+router.post('/generate-seo-info', async (req, res) => {
+    const { topic } = req.body;
+
+    if (!topic) {
+        return res.status(400).json({ error: 'Missing required field: topic' });
+    }
+
+    const systemPrompt = `تو یک متخصص سئو حرفه‌ای، تحلیل‌گر محتوا و کارشناس تحقیق کلمات کلیدی هستی.
+وظیفه تو این است که با دریافت یک موضوع از کاربر، بهترین اطلاعات سئویی ممکن را تولید کنی.
+
+قوانین:
+1. نتایج باید دقیق، قابل استفاده و براساس اصول سئوی 2024 باشند.
+2. کلمات کلیدی را به سه دسته تقسیم کن: اصلی، فرعی و طولانی (Long Tail).
+3. عنوان مقاله باید جذاب، قابل کلیک (CTR بالا) و بین 50 تا 65 کاراکتر باشد.
+4. متا دیسکریپشن باید بین 120 تا 155 کاراکتر باشد.
+5. یک چکیده کوتاه 1–2 جمله‌ای ارائه بده که مناسب نمایش در Rich Results باشد.
+6. اگر نیاز بود پیشنهاد ساختار مقاله (H1, H2, H3) را هم ارائه بده.
+7. فقط خروجی نهایی را ارائه بده؛ هیچ توضیح اضافی ننویس.`;
+
+    const userPrompt = `برای موضوع زیر، اطلاعات سئویی کامل تولید کن:
+
+موضوع:
+${topic}
+
+خروجی مورد نیاز:
+- کلمات کلیدی اصلی، فرعی و Long Tail
+- عنوان پیشنهادی
+- متا دیسکریپشن
+- چکیده کوتاه (Snippet)
+- پیشنهاد ساختار مقاله (اختیاری)`;
+
+    const text = systemPrompt + "\n\n" + userPrompt;
+
+    const payload = {
+        contents: [
+            {
+                role: "user",
+                parts: [{ text: text }]
+            }
+        ]
+    };
+
+    try {
+        if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
+
+        const generatedText = response.data.candidates[0].content.parts[0].text;
+        // Return the generated SEO info as text
+        res.status(200).json({ status: response.status, seo_info: generatedText.trim() });
+    } catch (err) {
+        console.error('Request failed:', err.message);
+        if (err.response) {
+            res.status(err.response.status).json({
+                error: 'Request failed',
+                status: err.response.status,
+                data: err.response.data
+            });
+        } else {
+            res.status(500).json({ error: 'Internal server error', message: err.message });
+        }
+    }
+});
+
 module.exports = router;
