@@ -116,6 +116,49 @@ npm run dev
 
 The server will start on `http://localhost:4000` and serve the client interface.
 
+## Docker Setup
+
+Alternatively, you can run the application using Docker for easier deployment.
+
+### Docker Prerequisites
+
+- **Docker** installed on your system
+- **Docker Compose** (optional, for easier management)
+
+### Build and Run with Docker
+
+1. **Build the Docker image**:
+
+```bash
+docker build -t content-generator .
+```
+
+2. **Run the container**:
+
+```bash
+docker run -p 4000:4000 -e GEMINI_API_KEY=your_api_key_here content-generator
+```
+
+Replace `your_api_key_here` with your actual Google Gemini API key.
+
+### Using Docker Compose
+
+For easier management, use the provided `docker-compose.yml`:
+
+1. **Set your API key** in `docker-compose.yml` or create a `.env` file in the root directory:
+
+```env
+GEMINI_API_KEY=your_actual_google_gemini_api_key_here
+```
+
+2. **Run with Docker Compose**:
+
+```bash
+docker-compose up --build
+```
+
+The application will be available at `http://localhost:4000`.
+
 ## Usage
 
 1. **Access the Application**: Open `http://localhost:4000` in your web browser.
