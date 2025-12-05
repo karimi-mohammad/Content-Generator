@@ -27,11 +27,19 @@ function renderSections() {
         const li = document.createElement('li'); li.className = 'section-item';
         li.innerHTML = `
       <div class="section-head">
-        <input class="sec-title" data-id="${sec.id}" value="${escapeHtml(sec.title)}"> (طول پیشنهادی: ${sec.words} کلمه)
-        <input class="sec-notes" data-id="${sec.id}" placeholder="نکات خاص برای این بخش (اختیاری)" value="${escapeHtml(sec.notes || '')}">
-        <div class="section-controls">
-          <button data-action="generate" data-id="${sec.id}">تولید محتوا</button>
-          <button data-action="seo" data-id="${sec.id}" class="secondary">بررسی SEO</button>
+        <div class="title-row">
+          <input class="sec-title" data-id="${sec.id}" value="${escapeHtml(sec.title)}">
+          <div class="section-controls">
+            <button data-action="generate" data-id="${sec.id}">تولید محتوا</button>
+            <button data-action="seo" data-id="${sec.id}" class="secondary">بررسی SEO</button>
+          </div>
+        </div>
+        <div class="words-row">
+          <label>تعداد کلمات:</label>
+          <input class="sec-words" data-id="${sec.id}" type="number" min="50" value="${sec.words}">
+        </div>
+        <div class="notes-row">
+          <input class="sec-notes" data-id="${sec.id}" placeholder="نکات خاص برای این بخش (اختیاری)" value="${escapeHtml(sec.notes || '')}">
         </div>
       </div>
       <div class="section-body">
@@ -141,6 +149,7 @@ sectionsList.addEventListener('input', e => {
     if (t.classList.contains('sec-title')) sec.title = t.value;
     if (t.classList.contains('sec-body')) sec.content = t.value;
     if (t.classList.contains('sec-notes')) sec.notes = t.value;
+    if (t.classList.contains('sec-words')) sec.words = Number(t.value);
 });
 
 function checkIfAllGenerated() {

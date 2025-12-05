@@ -6,20 +6,20 @@ WORKDIR /app
 # Copy package files
 COPY backend/package*.json backend/
 
+# Copy client static files
+COPY client/ client/
+
+# Set working directory to backend
+WORKDIR /app/backend
+
 # Install dependencies
 RUN npm install --production
 
 # Copy backend source
-COPY backend/ backend/
-
-# Copy client static files
-COPY client/ client/
+COPY backend/ ./
 
 # Expose port
 EXPOSE 4000
-
-# Set working directory to backend
-WORKDIR /app/backend
 
 # Start the application
 CMD ["npm", "start"]

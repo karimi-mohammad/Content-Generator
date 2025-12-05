@@ -10,6 +10,3 @@ services:
       # Add your API keys here or use .env file
       # - GEMINI_API_KEY=your_key_here
       # - GOOGLE_API_KEY=your_key_here
-    volumes:
-      # Optional: mount .env file if you have one
-      # - ./backend/.env:/app/backend/.env

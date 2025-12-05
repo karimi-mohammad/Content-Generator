@@ -239,6 +239,29 @@ button.secondary {
 
 .section-head {
     display: flex;
+    flex-direction: column;
+    gap: 8px
+}
+
+.title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px
+}
+
+.words-row {
+    display: flex;
+    align-items: center;
+    gap: 8px
+}
+
+.words-row label {
+    font-weight: 600;
+    margin: 0;
+}
+
+.notes-row {
+    display: flex;
     align-items: center;
     gap: 8px
 }
