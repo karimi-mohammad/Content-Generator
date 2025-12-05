@@ -43,7 +43,10 @@ router.get('/test-gemini', async (req, res) => {
         });
     } catch (err) {
         console.error('Request failed:', err.message);
+        console.log("-----------------");
+        console.error('Request failed:', err);
         if (err.response) {
+
             res.status(err.response.status).json({
                 error: 'Request failed',
                 status: err.response.status,
@@ -106,7 +109,7 @@ ${Site_Posts.join(', ')}
 
     try {
         if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
-        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 60000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text.replace(/^```json\n/, '').replace(/\n```$/, '');
         let result;
@@ -191,7 +194,7 @@ ${notes ? `- نکات اضافی: ${notes.replace(/`/g, "'")}` : ''}
 
     try {
         if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
-        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 60000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text;
         // Assuming the output is directly the markdown text
@@ -275,7 +278,7 @@ ${markdown_content}`;
 
     try {
         if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
-        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 60000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text;
         // Assuming the output is directly the HTML
@@ -285,6 +288,8 @@ ${markdown_content}`;
         });
     } catch (err) {
         console.error('Request failed:', err.message);
+        console.log("-----------------");
+        console.error('Request failed:', err);
         if (err.response) {
             res.status(err.response.status).json({
                 error: 'Request failed',
@@ -343,7 +348,7 @@ ${Array.isArray(keywords) ? keywords.join(', ') : keywords}
 
     try {
         if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
-        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 60000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text;
         // Return trimmed text directly
@@ -419,7 +424,7 @@ ${topic}
 
     try {
         if (!API_KEY) return res.status(500).json({ error: 'Missing server-side API key (GEMINI_API_KEY or GOOGLE_API_KEY)' });
-        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 30000));
+        const response = await axios.post(url, payload, makeAxiosOptions({ 'X-goog-api-key': API_KEY, 'Content-Type': 'application/json' }, 60000));
 
         const generatedText = response.data.candidates[0].content.parts[0].text.replace(/^```json\n/, '').replace(/\n```$/, '');
         let result;
