@@ -9,6 +9,32 @@ let state = { sections: [], keywords: [] };
 const API_BASE = 'http://localhost:4000/api';
 let finalMarkdown = '';
 
+function saveFormData() {
+    const data = {
+        topic: document.getElementById('topic').value,
+        tone: document.getElementById('tone').value,
+        keywords: document.getElementById('keywords').value,
+        desired_length: document.getElementById('desired_length').value,
+        target_audience: document.getElementById('target_audience').value,
+        serp: document.getElementById('serp').value,
+        site_name: document.getElementById('site_name').value,
+        site_posts: document.getElementById('site_posts').value
+    };
+    localStorage.setItem('formData', JSON.stringify(data));
+}
+
+function loadFormData() {
+    const data = JSON.parse(localStorage.getItem('formData') || '{}');
+    document.getElementById('topic').value = data.topic || '';
+    document.getElementById('tone').value = data.tone || '';
+    document.getElementById('keywords').value = data.keywords || '';
+    document.getElementById('desired_length').value = data.desired_length || '600';
+    document.getElementById('target_audience').value = data.target_audience || '';
+    document.getElementById('serp').value = data.serp || '';
+    document.getElementById('site_name').value = data.site_name || '';
+    document.getElementById('site_posts').value = data.site_posts || '';
+}
+
 // Ensure loading is hidden on load
 document.getElementById('loading').style.display = 'none';
 
@@ -32,6 +58,7 @@ function renderSections() {
           <div class="section-controls">
             <button data-action="generate" data-id="${sec.id}">تولید محتوا</button>
             <button data-action="seo" data-id="${sec.id}" class="secondary">بررسی SEO</button>
+            <button data-action="delete" data-id="${sec.id}" class="secondary">حذف</button>
           </div>
         </div>
         <div class="words-row">
@@ -139,6 +166,9 @@ sectionsList.addEventListener('click', async e => {
         const textarea = document.querySelector(`textarea[data-id="${id}"]`);
         const report = runSeoChecks(textarea.value, document.getElementById('topic').value, state.keywords);
         alert(report);
+    } else if (action === 'delete') {
+        state.sections = state.sections.filter(s => s.id !== id);
+        renderSections();
     }
 });
 
@@ -150,6 +180,12 @@ sectionsList.addEventListener('input', e => {
     if (t.classList.contains('sec-body')) sec.content = t.value;
     if (t.classList.contains('sec-notes')) sec.notes = t.value;
     if (t.classList.contains('sec-words')) sec.words = Number(t.value);
+});
+
+document.getElementById('addSection').addEventListener('click', () => {
+    const newId = Math.max(...state.sections.map(s => s.id), 0) + 1;
+    state.sections.push({ id: newId, title: 'بخش جدید', content: '', status: 'pending', notes: '', words: 100 });
+    renderSections();
 });
 
 function checkIfAllGenerated() {
@@ -304,3 +340,15 @@ function escapeHtml(s) {
     })[m]);
 }
 function escapeRegExp(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') }
+
+// Load form data on page load
+document.addEventListener('DOMContentLoaded', loadFormData);
+
+// Save form data on input
+form.addEventListener('input', saveFormData);
+
+// Reset form
+document.getElementById('resetForm').addEventListener('click', () => {
+    localStorage.removeItem('formData');
+    loadFormData();
+});
