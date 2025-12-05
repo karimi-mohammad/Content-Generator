@@ -49,7 +49,15 @@ function createMockSections(topic) {
 
 function renderSections() {
     sectionsList.innerHTML = '';
-    state.sections.forEach(sec => {
+    state.sections.forEach((sec, index) => {
+        // Add insert button before each section (except the first one)
+        if (index > 0) {
+            const insertBtn = document.createElement('li');
+            insertBtn.className = 'insert-section';
+            insertBtn.innerHTML = `<button data-action="insert" data-position="${index}" class="insert-btn">+ افزودن بخش جدید</button>`;
+            sectionsList.appendChild(insertBtn);
+        }
+
         const li = document.createElement('li'); li.className = 'section-item';
         li.innerHTML = `
       <div class="section-head">
@@ -75,6 +83,12 @@ function renderSections() {
     `;
         sectionsList.appendChild(li);
     });
+
+    // Add insert button after the last section
+    const insertBtn = document.createElement('li');
+    insertBtn.className = 'insert-section';
+    insertBtn.innerHTML = `<button data-action="insert" data-position="${state.sections.length}" class="insert-btn">+ افزودن بخش جدید</button>`;
+    sectionsList.appendChild(insertBtn);
 }
 
 form.addEventListener('submit', async e => {
@@ -168,6 +182,20 @@ sectionsList.addEventListener('click', async e => {
         alert(report);
     } else if (action === 'delete') {
         state.sections = state.sections.filter(s => s.id !== id);
+        // Update IDs to maintain sequential order
+        state.sections.forEach((sec, index) => {
+            sec.id = index + 1;
+        });
+        renderSections();
+    } else if (action === 'insert') {
+        const position = Number(btn.dataset.position);
+        const newId = Math.max(...state.sections.map(s => s.id), 0) + 1;
+        const newSection = { id: newId, title: 'بخش جدید', content: '', status: 'pending', notes: '', words: 100 };
+        state.sections.splice(position, 0, newSection);
+        // Update IDs to maintain sequential order
+        state.sections.forEach((sec, index) => {
+            sec.id = index + 1;
+        });
         renderSections();
     }
 });
@@ -185,6 +213,10 @@ sectionsList.addEventListener('input', e => {
 document.getElementById('addSection').addEventListener('click', () => {
     const newId = Math.max(...state.sections.map(s => s.id), 0) + 1;
     state.sections.push({ id: newId, title: 'بخش جدید', content: '', status: 'pending', notes: '', words: 100 });
+    // Update IDs to maintain sequential order
+    state.sections.forEach((sec, index) => {
+        sec.id = index + 1;
+    });
     renderSections();
 });
 
