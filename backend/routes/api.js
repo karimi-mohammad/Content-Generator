@@ -20,7 +20,7 @@ function makeAxiosOptions(headers = {}, timeout = 30000) {
     return opts;
 }
 
-const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
 
 router.get('/test-gemini', async (req, res) => {
     const payload = {
